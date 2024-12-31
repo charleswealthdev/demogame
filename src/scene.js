@@ -433,6 +433,8 @@ setInterval(() => {
   controls.enableDamping=true;
   controls.enableZoom = true; // Enable pinch zoom
   controls.enableRotate = true;
+  controls.maxDistance = 25;  // Limit zoom distance
+ controls.minDistance = 5;   // Avoid zooming too close
 
 
 // // Mobile swipe-to-move variables
@@ -486,13 +488,58 @@ setInterval(() => {
 //   camera.position.y -= tiltY * 0.1; // Adjust sensitivity as needed
 // }, false);
 
+// let touchStartX = 0;
+// let touchStartY = 0;
+// let isTouching = false;
+
+// window.addEventListener('touchstart', (e) => {
+//   touchStartX = e.touches[0].clientX;
+//   touchStartY = e.touches[0].clientY;
+//   isTouching = true;
+// });
+
+// window.addEventListener('touchmove', (e) => {
+//   if (isTouching) {
+//     let touchMoveX = e.touches[0].clientX;
+//     let touchMoveY = e.touches[0].clientY;
+
+//     // Calculate movement delta
+//     const deltaX = touchMoveX - touchStartX;
+//     const deltaY = touchMoveY - touchStartY;
+
+//     // Update player position or other actions
+//     player.position.x += deltaX * 0.01; // Adjust movement speed
+//     player.position.y += deltaY * 0.01;
+
+//     touchStartX = touchMoveX;
+//     touchStartY = touchMoveY;
+//   }
+// });
+
+// window.addEventListener('touchend', () => {
+//   isTouching = false;
+// });
+
 let touchStartX = 0;
 let touchStartY = 0;
 let isTouching = false;
 
+// Create a raycaster and a vector for the touch point
+const raycaster = new THREE.Raycaster();
+const touchVector = new THREE.Vector2();
+
 window.addEventListener('touchstart', (e) => {
+  // Get the initial touch position
   touchStartX = e.touches[0].clientX;
   touchStartY = e.touches[0].clientY;
+
+  // Convert to normalized device coordinates (-1 to +1)
+  touchVector.x = (touchStartX / window.innerWidth) * 2 - 1;
+  touchVector.y = -(touchStartY / window.innerHeight) * 2 + 1;
+
+  // Set the raycaster position based on the touch position
+  raycaster.setFromCamera(touchVector, camera);
+
   isTouching = true;
 });
 
@@ -501,23 +548,28 @@ window.addEventListener('touchmove', (e) => {
     let touchMoveX = e.touches[0].clientX;
     let touchMoveY = e.touches[0].clientY;
 
-    // Calculate movement delta
-    const deltaX = touchMoveX - touchStartX;
-    const deltaY = touchMoveY - touchStartY;
+    // Convert to normalized device coordinates (-1 to +1)
+    touchVector.x = (touchMoveX / window.innerWidth) * 2 - 1;
+    touchVector.y = -(touchMoveY / window.innerHeight) * 2 + 1;
 
-    // Update player position or other actions
-    player.position.x += deltaX * 0.01; // Adjust movement speed
-    player.position.y += deltaY * 0.01;
+    // Set the raycaster position based on the touch position
+    raycaster.setFromCamera(touchVector, camera);
 
-    touchStartX = touchMoveX;
-    touchStartY = touchMoveY;
+    // Cast the ray to get a 3D point on the screen
+    const intersects = raycaster.intersectObject(groundPlane); // assuming you have a ground plane to limit player movement
+    if (intersects.length > 0) {
+      const intersectPoint = intersects[0].point;
+
+      // Update the player position based on the intersected point
+      player.position.x = intersectPoint.x;
+      player.position.z = intersectPoint.z;
+    }
   }
 });
 
 window.addEventListener('touchend', () => {
   isTouching = false;
 });
-
 
 
 
