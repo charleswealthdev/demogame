@@ -5,6 +5,7 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
 
+export function createHeroScene(container){
 
 const scene = new THREE.Scene()
 const canvas = document.querySelector('canvas.webgl')
@@ -13,9 +14,9 @@ const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
   antialias:true
 })
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
 
+renderer.setSize(container.clientWidth, container.clientHeight);
+container.appendChild(renderer.domElement);
 
 const loadingManager = new THREE.LoadingManager();
 
@@ -576,12 +577,17 @@ if(event.key ==='ArrowRight')
       // Check if the player collides with any obstacles
       function checkGameOver(player, obstacles) {
         obstacles.forEach((obstacle) => {
+
+          if (!player || !obstacles || !objectSound || !backgroundMusic) {
+            console.error("Player, obstacles, or sound objects are undefined.");
+            return;
+          }
           const playerBox = new THREE.Box3().setFromObject(player);
           const obstacleBox = new THREE.Box3().setFromObject(obstacle);
       
           if (playerBox.intersectsBox(obstacleBox)) {
             triggerGameOver();
-            player.add(objectSound)
+          
             backgroundMusic.stop()
           }
         });
@@ -702,13 +708,14 @@ if(event.key ==='ArrowRight')
       //   })
       // }
 
-      window.addEventListener('resize', () => {
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        console.log('resized');
-      });
+    
 
+  window.addEventListener('resize', () => {
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    console.log('resized')
+  });
 
       renderer.shadowMap.enabled = true;
       const clock = new THREE.Clock()
@@ -728,6 +735,7 @@ if(event.key ==='ArrowRight')
     increaseDifficulty()
     updateScore()
     checkGameOver(player, obstacles);
+    controls.update()
     // checkCollision()
     updateHighway()
     // ground.position.z += speed;
@@ -738,3 +746,4 @@ if(event.key ==='ArrowRight')
     renderer.render(scene,camera)
   }
   animate()
+}
