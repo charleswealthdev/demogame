@@ -436,55 +436,55 @@ setInterval(() => {
 
 
 // // Mobile swipe-to-move variables
-// let startX = 0;
-// let startY = 0;
-// let isTouching = false;
+let startX = 0;
+let startY = 0;
+let isTouching = false;
 
-// // Device orientation variables (tilt)
-// let tiltX = 0;
-// let tiltY = 0;
+// Device orientation variables (tilt)
+let tiltX = 0;
+let tiltY = 0;
 
-// // Touch start event for swipe detection
-// renderer.domElement.addEventListener('touchstart', (event) => {
-//   if (event.touches.length === 1) {
-//     // Start touch, save initial positions
-//     startX = event.touches[0].pageX;
-//     startY = event.touches[0].pageY;
-//     isTouching = true;
-//   }
-// }, false);
+// Touch start event for swipe detection
+renderer.domElement.addEventListener('touchstart', (event) => {
+  if (event.touches.length === 1) {
+    // Start touch, save initial positions
+    startX = event.touches[0].pageX;
+    startY = event.touches[0].pageY;
+    isTouching = true;
+  }
+}, false);
 
-// // Touch move event for swipe detection
-// renderer.domElement.addEventListener('touchmove', (event) => {
-//   if (!isTouching) return;
+// Touch move event for swipe detection
+renderer.domElement.addEventListener('touchmove', (event) => {
+  if (!isTouching) return;
 
-//   // Get touch movement
-//   const diffX = event.touches[0].pageX - startX;
-//   const diffY = event.touches[0].pageY - startY;
+  // Get touch movement
+  const diffX = event.touches[0].pageX - startX;
+  const diffY = event.touches[0].pageY - startY;
 
-//   // Update camera position or object based on swipe (example moves camera)
-//   camera.position.x -= diffX * 0.05; // Adjust speed factor as needed
-//   camera.position.y += diffY * 0.05;
+  // Update camera position or object based on swipe (example moves camera)
+  camera.position.x -= diffX * 0.05; // Adjust speed factor as needed
+  camera.position.y += diffY * 0.05;
 
-//   // Update start positions to calculate new movement
-//   startX = event.touches[0].pageX;
-//   startY = event.touches[0].pageY;
-// }, false);
+  // Update start positions to calculate new movement
+  startX = event.touches[0].pageX;
+  startY = event.touches[0].pageY;
+}, false);
 
-// // Touch end event to stop touch tracking
-// renderer.domElement.addEventListener('touchend', () => {
-//   isTouching = false;
-// }, false);
+// Touch end event to stop touch tracking
+renderer.domElement.addEventListener('touchend', () => {
+  isTouching = false;
+}, false);
 
-// // Device orientation event to detect tilt (using device's gyroscope)
-// window.addEventListener('deviceorientation', (event) => {
-//   tiltX = event.gamma; // Left-to-right tilt in degrees
-//   tiltY = event.beta;  // Forward-and-backward tilt in degrees
+// Device orientation event to detect tilt (using device's gyroscope)
+window.addEventListener('deviceorientation', (event) => {
+  tiltX = event.gamma; // Left-to-right tilt in degrees
+  tiltY = event.beta;  // Forward-and-backward tilt in degrees
 
-//   // Apply tilt to camera (for example)
-//   camera.position.x += tiltX * 0.1; // Adjust sensitivity as needed
-//   camera.position.y -= tiltY * 0.1; // Adjust sensitivity as needed
-// }, false);
+  // Apply tilt to camera (for example)
+  camera.position.x += tiltX * 0.1; // Adjust sensitivity as needed
+  camera.position.y -= tiltY * 0.1; // Adjust sensitivity as needed
+}, false);
 
 
 
