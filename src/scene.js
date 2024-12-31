@@ -436,56 +436,87 @@ setInterval(() => {
 
 
 // // Mobile swipe-to-move variables
-let startX = 0;
-let startY = 0;
+// let startX = 0;
+// let startY = 0;
+// let isTouching = false;
+
+// // Device orientation variables (tilt)
+// let tiltX = 0;
+// let tiltY = 0;
+
+// // Touch start event for swipe detection
+// renderer.domElement.addEventListener('touchstart', (event) => {
+//   if (event.touches.length === 1) {
+//     // Start touch, save initial positions
+//     startX = event.touches[0].pageX;
+//     startY = event.touches[0].pageY;
+//     isTouching = true;
+//   }
+// }, false);
+
+// // Touch move event for swipe detection
+// renderer.domElement.addEventListener('touchmove', (event) => {
+//   if (!isTouching) return;
+
+//   // Get touch movement
+//   const diffX = event.touches[0].pageX - startX;
+//   const diffY = event.touches[0].pageY - startY;
+
+//   // Update camera position or object based on swipe (example moves camera)
+//   camera.position.x -= diffX * 0.05; // Adjust speed factor as needed
+//   camera.position.y += diffY * 0.05;
+
+//   // Update start positions to calculate new movement
+//   startX = event.touches[0].pageX;
+//   startY = event.touches[0].pageY;
+// }, false);
+
+// // Touch end event to stop touch tracking
+// renderer.domElement.addEventListener('touchend', () => {
+//   isTouching = false;
+// }, false);
+
+// // Device orientation event to detect tilt (using device's gyroscope)
+// window.addEventListener('deviceorientation', (event) => {
+//   tiltX = event.gamma; // Left-to-right tilt in degrees
+//   tiltY = event.beta;  // Forward-and-backward tilt in degrees
+
+//   // Apply tilt to camera (for example)
+//   camera.position.x += tiltX * 0.1; // Adjust sensitivity as needed
+//   camera.position.y -= tiltY * 0.1; // Adjust sensitivity as needed
+// }, false);
+
+let touchStartX = 0;
+let touchStartY = 0;
 let isTouching = false;
 
-// Device orientation variables (tilt)
-let tiltX = 0;
-let tiltY = 0;
+window.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  isTouching = true;
+});
 
-// Touch start event for swipe detection
-renderer.domElement.addEventListener('touchstart', (event) => {
-  if (event.touches.length === 1) {
-    // Start touch, save initial positions
-    startX = event.touches[0].pageX;
-    startY = event.touches[0].pageY;
-    isTouching = true;
+window.addEventListener('touchmove', (e) => {
+  if (isTouching) {
+    let touchMoveX = e.touches[0].clientX;
+    let touchMoveY = e.touches[0].clientY;
+
+    // Calculate movement delta
+    const deltaX = touchMoveX - touchStartX;
+    const deltaY = touchMoveY - touchStartY;
+
+    // Update player position or other actions
+    player.position.x += deltaX * 0.01; // Adjust movement speed
+    player.position.y += deltaY * 0.01;
+
+    touchStartX = touchMoveX;
+    touchStartY = touchMoveY;
   }
-}, false);
+});
 
-// Touch move event for swipe detection
-renderer.domElement.addEventListener('touchmove', (event) => {
-  if (!isTouching) return;
-
-  // Get touch movement
-  const diffX = event.touches[0].pageX - startX;
-  const diffY = event.touches[0].pageY - startY;
-
-  // Update camera position or object based on swipe (example moves camera)
-  camera.position.x -= diffX * 0.05; // Adjust speed factor as needed
-  camera.position.y += diffY * 0.05;
-
-  // Update start positions to calculate new movement
-  startX = event.touches[0].pageX;
-  startY = event.touches[0].pageY;
-}, false);
-
-// Touch end event to stop touch tracking
-renderer.domElement.addEventListener('touchend', () => {
+window.addEventListener('touchend', () => {
   isTouching = false;
-}, false);
-
-// Device orientation event to detect tilt (using device's gyroscope)
-window.addEventListener('deviceorientation', (event) => {
-  tiltX = event.gamma; // Left-to-right tilt in degrees
-  tiltY = event.beta;  // Forward-and-backward tilt in degrees
-
-  // Apply tilt to camera (for example)
-  camera.position.x += tiltX * 0.1; // Adjust sensitivity as needed
-  camera.position.y -= tiltY * 0.1; // Adjust sensitivity as needed
-}, false);
-
+});
 
 
 
