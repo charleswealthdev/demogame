@@ -169,7 +169,7 @@ scene.add(directionalLight);
   gltfLoader.load('/myavatar.glb', (gltf) => {
     player = gltf.scene;
   
-    player.scale.setScalar(1.7)
+    player.scale.setScalar(1.4)
     // Bounding box for positioning
     const box = new THREE.Box3().setFromObject(player);
     const size = new THREE.Vector3();
@@ -402,8 +402,8 @@ setInterval(() => {
   // const planeHeight = 0; // y position of the ground plane
   // camera.position.y = Math.max(camera.position.y, planeHeight + 1); // Keep camera above the ground
   
-  camera.position.set(0,3,10)
-  camera.lookAt(0,1,0)
+  // camera.position.set(0,3,10)
+  // camera.lookAt(0,1,0)
   // camecamera.lookAt(0,0,0)ra.lookAt(cube.position)
   scene.add(camera)
   
@@ -418,15 +418,31 @@ setInterval(() => {
   //     }
   // }
 
-  function updateCamera() {
-    if (player) {
-        camera.position.lerp(
-            new THREE.Vector3(player.position.x, 3, player.position.z + 5),
-            0.1 // Smooth factor
-        );
-        camera.lookAt(player.position.x, player.position.y, player.position.z);
-    }
-}
+//   function updateCamera() {
+//     if (player) {
+//         camera.position.lerp(
+//             new THREE.Vector3(player.position.x, 3, player.position.z + 5),
+//             0.1 // Smooth factor
+//         );
+//         camera.lookAt(player.position.x, player.position.y, player.position.z);
+//     }
+// }
+const cameraDistance = 6; // Adjust the distance as needed
+
+// Set the initial camera position to be farther from the player
+camera.position.set(0, 5, cameraDistance); // Adjust these values to control distance and height
+camera.lookAt(0, 0, 0); // Always look at the player
+
+// Optionally, you can add some controls to move the camera slightly around the player (e.g., orbit controls)
+
+const updateCamera = () => {
+  // If you want to dynamically adjust camera position based on user interaction or gameplay
+  camera.position.x = player.position.x;
+  camera.position.z = player.position.z + cameraDistance; // Maintain distance from the player
+
+  // Ensure the camera always looks at the player
+  camera.lookAt(player.position);
+};
 
 
   const controls = new OrbitControls(camera,canvas)
@@ -488,58 +504,13 @@ setInterval(() => {
 //   camera.position.y -= tiltY * 0.1; // Adjust sensitivity as needed
 // }, false);
 
-// let touchStartX = 0;
-// let touchStartY = 0;
-// let isTouching = false;
-
-// window.addEventListener('touchstart', (e) => {
-//   touchStartX = e.touches[0].clientX;
-//   touchStartY = e.touches[0].clientY;
-//   isTouching = true;
-// });
-
-// window.addEventListener('touchmove', (e) => {
-//   if (isTouching) {
-//     let touchMoveX = e.touches[0].clientX;
-//     let touchMoveY = e.touches[0].clientY;
-
-//     // Calculate movement delta
-//     const deltaX = touchMoveX - touchStartX;
-//     const deltaY = touchMoveY - touchStartY;
-
-//     // Update player position or other actions
-//     player.position.x += deltaX * 0.01; // Adjust movement speed
-//     player.position.y += deltaY * 0.01;
-
-//     touchStartX = touchMoveX;
-//     touchStartY = touchMoveY;
-//   }
-// });
-
-// window.addEventListener('touchend', () => {
-//   isTouching = false;
-// });
-
 let touchStartX = 0;
 let touchStartY = 0;
 let isTouching = false;
 
-// Create a raycaster and a vector for the touch point
-const raycaster = new THREE.Raycaster();
-const touchVector = new THREE.Vector2();
-
 window.addEventListener('touchstart', (e) => {
-  // Get the initial touch position
   touchStartX = e.touches[0].clientX;
   touchStartY = e.touches[0].clientY;
-
-  // Convert to normalized device coordinates (-1 to +1)
-  touchVector.x = (touchStartX / window.innerWidth) * 2 - 1;
-  touchVector.y = -(touchStartY / window.innerHeight) * 2 + 1;
-
-  // Set the raycaster position based on the touch position
-  raycaster.setFromCamera(touchVector, camera);
-
   isTouching = true;
 });
 
@@ -548,28 +519,23 @@ window.addEventListener('touchmove', (e) => {
     let touchMoveX = e.touches[0].clientX;
     let touchMoveY = e.touches[0].clientY;
 
-    // Convert to normalized device coordinates (-1 to +1)
-    touchVector.x = (touchMoveX / window.innerWidth) * 2 - 1;
-    touchVector.y = -(touchMoveY / window.innerHeight) * 2 + 1;
+    // Calculate movement delta
+    const deltaX = touchMoveX - touchStartX;
+    const deltaY = touchMoveY - touchStartY;
 
-    // Set the raycaster position based on the touch position
-    raycaster.setFromCamera(touchVector, camera);
+    // Update player position or other actions
+    player.position.x += deltaX * 0.01; // Adjust movement speed
+    player.position.y += deltaY * 0.01;
 
-    // Cast the ray to get a 3D point on the screen
-    const intersects = raycaster.intersectObject(groundPlane); // assuming you have a ground plane to limit player movement
-    if (intersects.length > 0) {
-      const intersectPoint = intersects[0].point;
-
-      // Update the player position based on the intersected point
-      player.position.x = intersectPoint.x;
-      player.position.z = intersectPoint.z;
-    }
+    touchStartX = touchMoveX;
+    touchStartY = touchMoveY;
   }
 });
 
 window.addEventListener('touchend', () => {
   isTouching = false;
 });
+
 
 
 
