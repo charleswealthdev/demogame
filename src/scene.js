@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+import { ThreeMFLoader } from 'three/examples/jsm/Addons.js';
 
 
 export function createHeroScene(container){
@@ -370,6 +371,8 @@ function createObstacles() {
           '/bomb.glb',
         ];
         const selectedModel = models[Math.floor(Math.random() * models.length)];
+
+        const gltfLoader = new GLTFLoader()
 
         gltfLoader.load(selectedModel, (gltf) => {
           const model = gltf.scene;
@@ -890,29 +893,29 @@ if(event.key ==='ArrowRight')
         // Restart the animation loop
         animate();
       }
-      
-      // Tilt Control Logic
-   // Enable tilt control and set sensitivity
-let isTiltControlEnabled = true;
-const tiltSensitivity = 0.2; // Adjust sensitivity for smoother control
+      let isTiltControlEnabled = true;
+let movementSpeed = 0.1; // Horizontal movement speed (adjustable)
+let maxTilt = 30; // Max allowed tilt (adjust for sensitivity)
 
-// Event listener for device orientation
+// Enable tilt control (listen to device orientation)
 window.addEventListener("deviceorientation", (event) => {
   if (isTiltControlEnabled && !gameOver) {
-    const tiltX = event.gamma; // Left/Right tilt (-90 to +90 degrees)
-    const tiltY = event.beta; // Forward/Backward tilt (0 to 180 degrees)
-
-    // Map tilt to player movement
-    const deltaX = (tiltX / 45) * tiltSensitivity; // Scale gamma (-45 to +45 for smooth movement)
-    const deltaZ = (tiltY / 90 - 1) * tiltSensitivity; // Scale beta (90 is neutral)
-
-    // Update player position with clamping to keep within bounds
-    player.position.x = THREE.MathUtils.clamp(player.position.x + deltaX, -5, 5); // Adjust -5, 5 as boundaries
-    player.position.z = THREE.MathUtils.clamp(player.position.z + deltaZ, -20, 0); // Adjust -20, 0 as boundaries
+    const tiltX = event.gamma; // Left/Right tilt (gamma axis)
+    
+    // Clamp the tilt to the range [-maxTilt, maxTilt] to avoid too fast movement
+    const clampedTiltX = Math.max(-maxTilt, Math.min(tiltX, maxTilt));
+    
+    // Map the tilt to player movement, scaling by movement speed
+    player.position.x += (clampedTiltX / maxTilt) * movementSpeed;
+    
+    // Optional: Limit player movement within a certain range
+    player.position.x = Math.max(-5, Math.min(player.position.x, 5)); // x-axis movement clamped to [-5, 5]
+    
+    // Optional: Keep the player grounded (set Y position fixed)
+    player.position.y = 1; // Set the Y position to a fixed value to stay grounded
   }
 });
 
-      
       // Toggle Control UI
 
       // Style the control toggle button for a glass look
@@ -962,6 +965,7 @@ controlToggle.addEventListener("click", () => {
     : " Tilt Control";
 });
 
+
       
       // Joystick Setup
       function setupJoystick() {
@@ -988,52 +992,58 @@ controlToggle.addEventListener("click", () => {
           top: "30px",
         });
         joystick.appendChild(handle);
-      
+
+
         let isDragging = false;
-        let initialTouch = null;
-        
-        // Add event listeners for touch interactions
-        joystick.addEventListener("touchstart", (e) => {
-          isDragging = true;
-          initialTouch = e.touches[0];
-        });
-        
-        joystick.addEventListener("touchmove", (e) => {
-          if (isDragging && initialTouch) {
-            const rect = joystick.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-        
-            // Calculate movement direction and intensity
-            const deltaX = e.touches[0].clientX - centerX;
-            const deltaY = e.touches[0].clientY - centerY;
-            const angle = Math.atan2(deltaY, deltaX);
-            const distance = Math.min(Math.hypot(deltaX, deltaY), rect.width / 2); // Cap to joystick radius
-        
-            // Normalize movement intensity (e.g., based on joystick size)
-            const normalizedX = (distance / (rect.width / 2)) * Math.cos(angle);
-            const normalizedY = (distance / (rect.height / 2)) * Math.sin(angle);
-        
-            // Update player position with scaling factor
-            const movementSpeed = 0.1; // Adjust as needed for responsiveness
-            player.position.x += normalizedX * movementSpeed;
-            player.position.z += normalizedY * movementSpeed;
-        
-            // Optional: Update joystick visual to reflect direction
-            joystick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-          }
-        });
-        
-        joystick.addEventListener("touchend", () => {
-          isDragging = false;
-          initialTouch = null;
-        
-          // Reset joystick position visually
-          joystick.style.transform = "translate(0, 0)";
-        });
-        
+let initialTouch = null;
+
+const movementSpeed = 0.05; // Speed of horizontal movement
+const deadZone = 10; // Minimum distance to register movement
+
+joystick.addEventListener("touchstart", (e) => {
+  isDragging = true;
+  initialTouch = e.touches[0];
+});
+
+joystick.addEventListener("touchmove", (e) => {
+  if (isDragging && initialTouch) {
+    const rect = joystick.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+
+    // Calculate horizontal movement (X-axis only)
+    const deltaX = e.touches[0].clientX - centerX;
+
+    // Dead zone: Ignore minor movements near the center
+    if (Math.abs(deltaX) > deadZone) {
+      const normalizedX = Math.min(Math.max(deltaX / (rect.width / 2), -1), 1); // Normalize between -1 and 1
+
+      // Move player only along the X-axis
+      player.position.x += normalizedX * movementSpeed;
+
+      // Update joystick visual position (left-right only)
+      joystick.style.transform = `translateX(${deltaX}px)`;
+    }
+  }
+});
+
+joystick.addEventListener("touchend", () => {
+  isDragging = false;
+  initialTouch = null;
+
+  // Reset joystick visual position
+  joystick.style.transform = "translate(0, 0)";
+});
+
+// Keep the player grounded (Y and Z axes fixed)
+
+
       }
-      
+
+      function updatePlayerPosition() {
+        player.position.y = 1; // Ground level (adjust based on your scene)
+        player.position.z = 0; // Ensure no forward/backward movement
+      }
+  
       setupJoystick();
       
 
@@ -1088,6 +1098,7 @@ controlToggle.addEventListener("click", () => {
     increaseDifficulty()
     updateScore()
 updateGround() 
+updatePlayerPosition()
 
     }
     checkGameOver(player, obstacles);
