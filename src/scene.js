@@ -267,7 +267,7 @@ const groundMaterial = new THREE.MeshStandardMaterial({
 
   const groundTiles = [];
   const groundCount = 2;
-  let speed = 0.1; 
+  let speed = 0.2; 
   
   for (let i = 0; i < groundCount; i++) {
     const ground = new THREE.Mesh(groundGeo, groundMaterial);
@@ -376,12 +376,12 @@ function createObstacles() {
 
           // // Randomize obstacle size
           // const size = Math.random() * 2 + 1; // Random size between 1 and 3
-          model.scale.set(1.8,1.8,1.8);
+          model.scale.set(1.4,1.4,1.4);
 
           // // Randomize position
           model.position.set(
             Math.random() * 10 - 5, // Random x position
-           1.6,               // y position based on size
+           1.4,               // y position based on size
             -20                     // Start far back on the z-axis
           );
 
@@ -424,7 +424,7 @@ function createObstacles() {
 }
 
 // Call `createObstacles` periodically, e.g., every 6 seconds
-setInterval(createObstacles, 6000);
+setInterval(createObstacles, 10000);
 
 //   function updateObstacles(){
 // obstacles.forEach((obstacle)=> {
@@ -469,7 +469,7 @@ setInterval(() => {
   if (obstacles.length <  5) { // Limit to a reasonable number of obstacles
     createObstacles();
   }
-}, 3000);
+}, 6000);
 
   scene.add(camera)
   
@@ -861,7 +861,6 @@ if(event.key ==='ArrowRight')
       function restartGame() {
         gameOver = false;
         score = 0;
-        speed = 0.08;
         player.position.set(0, 1, 0);
       
         // Play background music
