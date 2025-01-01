@@ -33,13 +33,20 @@ loadingManager.onLoad = () => {
    
 };
 
+
+const progressBar = document.querySelector('#progress-bar');
 // Track loading progress
 loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
- 
+  if (progressBar) {
     console.log(`Loaded ${itemsLoaded} of ${itemsTotal} files: ${url}`);
     const progress = (itemsLoaded / itemsTotal) * 100;
   
     document.getElementById('progress-bar').style.width = `${progress}%`;
+
+      progressBar.style.width = `${progress}%`; // Update the progress bar width
+    } else {
+      console.warn('Progress bar element is not found.');
+    }
    
 };
 
@@ -57,6 +64,7 @@ const listener = new THREE.AudioListener();
 const sound = new THREE.Audio(listener);
 const audioLoader = new THREE.AudioLoader(loadingManager);
 
+// scene.background = new THREE.Color(0x87ceeb); // Sky blue
 
 
 
@@ -65,7 +73,8 @@ const rgbeLoader = new RGBELoader();
 rgbeLoader.load('/shanghai_bund_1k.hdr', (texture) => {
   texture.mapping = THREE.EquirectangularReflectionMapping;
   scene.environment = texture; // Apply to scene
-scene.environment= texture
+  scene.background = new THREE.Color(0x87ceeb); // Sky blue
+
 });
 
 // rgbeLoader.load('/street_lamp_1k.hdr', (texture) => {
@@ -258,6 +267,7 @@ const groundMaterial = new THREE.MeshStandardMaterial({
 
   const groundTiles = [];
   const groundCount = 2;
+  let speed = 0.1; 
   
   for (let i = 0; i < groundCount; i++) {
     const ground = new THREE.Mesh(groundGeo, groundMaterial);
@@ -280,7 +290,7 @@ const groundMaterial = new THREE.MeshStandardMaterial({
     });
   }
 
-let speed = 0.08; // Start with a slower speed
+// Start with a slower speed
 
 // const highwayTiles = [];
 //   const highwayCount = 2; // Number of highway tiles
@@ -318,65 +328,103 @@ let speed = 0.08; // Start with a slower speed
 // }
 
 
+// Array to hold obstacles
+const obstacles = [];
 
-  const obstacles = [];
+// Create obstacles function
+function createObstacles() {
+  const textureLoader = new THREE.TextureLoader();
+ 
 
-  
-  function createObstacles() {
-    // Load the obstacle model
-    // gltfLoader.load('/GLB format/wall.glb', (gltf) => {
-    //   const obstacle = gltf.scene;
-    const textureLoader = new THREE.TextureLoader();
-      textureLoader.load('/cx3.jpg', (texture) => {
-        const sphereGeometry = new THREE.BoxGeometry(1, 1, 1, 5,5,5); // Higher resolution for smoother appearance
-        const sphereMaterial = new THREE.MeshStandardMaterial({
-            map: texture,
-            transparent: true,
-            roughness: 1,
-            metalness: 0.5,
-        });
-      
-        // Create the sphere
-       const obstacle = new THREE.Mesh(sphereGeometry, sphereMaterial);
-      // Randomize obstacle size
-      const size = Math.random() * 2 + 1; // Random size between 1 and 3
-      obstacle.scale.setScalar(1.3);
-  
-      // Compute the bounding box to align the obstacle properly
-      const box = new THREE.Box3().setFromObject(obstacle);
-      const objectSize = new THREE.Vector3();
-      const center = new THREE.Vector3();
-      box.getSize(objectSize);
-      box.getCenter(center);
-  
-      obstacle.position.set(0, -box.min.y, 0);
-  
-      // Enable shadows for obstacle meshes
-      obstacle.traverse((child) => {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-        }
-      });
-  
-      // Position the obstacle randomly
-      obstacle.position.set(
-        Math.random() * 10 - 5, // Random x position
-        size / 2,              // y position based on size
-        -20                    // Start far back on the z-axis
-      );
-  
-      // Add the obstacle to the scene
-      scene.add(obstacle);
-  
-      // Store the obstacle for future updates
-      obstacles.push(obstacle);
+  // Randomly choose between different obstacle types (geometries or models)
+  const obstacleType = Math.floor(Math.random() * 4); // Now selecting from 0 to 3
+
+  textureLoader.load('/cx3.jpg', (texture) => {
+    let obstacle;
+
+    // Material for all geometries
+    const material = new THREE.MeshStandardMaterial({
+      map: texture,
+      transparent: true,
+      roughness: 1,
+      metalness: 0.5,
     });
-  }
-  
-  // Call `createObstacles` as needed, e.g., in an interval
-  setInterval(createObstacles, 2000); // Creates a new obstacle every 2 seconds
-  
+
+    switch (obstacleType) {
+      case 0: // Cube
+        obstacle = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
+        break;
+
+      case 1: // Sphere
+        obstacle = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), material);
+        break;
+
+      case 2: // Cone
+        obstacle = new THREE.Mesh(new THREE.ConeGeometry(1, 2, 32), material);
+        break;
+
+      case 3: // Custom 3D Model (GLTF)
+        const models = [
+          '/green-goblin_bomb.glb',
+          '/cherri_bomb.glb',
+          '/bomb.glb',
+        ];
+        const selectedModel = models[Math.floor(Math.random() * models.length)];
+
+        gltfLoader.load(selectedModel, (gltf) => {
+          const model = gltf.scene;
+
+          // // Randomize obstacle size
+          // const size = Math.random() * 2 + 1; // Random size between 1 and 3
+          model.scale.set(1.8,1.8,1.8);
+
+          // // Randomize position
+          model.position.set(
+            Math.random() * 10 - 5, // Random x position
+           1.6,               // y position based on size
+            -20                     // Start far back on the z-axis
+          );
+
+          // Enable shadows for model
+          model.traverse((child) => {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+
+          // Add to scene and obstacles array
+          scene.add(model);
+          obstacles.push(model);
+        });
+        return; // Exit the function to avoid adding a non-existent obstacle below
+    }
+
+    // Randomize obstacle size
+    const size = Math.random() * 2 + 1; // Random size between 1 and 3
+    obstacle.scale.set(1,1,1);
+
+    // Randomize position
+    obstacle.position.set(
+      Math.random() * 10 - 5, // Random x position
+      1,               // y position based on size
+      -20                     // Start far back on the z-axis
+    );
+
+    // Enable shadows for obstacle
+    obstacle.castShadow = true;
+    obstacle.receiveShadow = true;
+
+    // Add the obstacle to the scene
+    scene.add(obstacle);
+
+    // Store the obstacle for future updates
+    obstacles.push(obstacle);
+  });
+}
+
+// Call `createObstacles` periodically, e.g., every 6 seconds
+setInterval(createObstacles, 6000);
 
 //   function updateObstacles(){
 // obstacles.forEach((obstacle)=> {
@@ -402,7 +450,7 @@ function updateObstacles() {
     obstacle.position.z += speed;
 
     // Reset obstacle if it moves past the player
-    if (obstacle.position.z > 10) {
+    if (obstacle.position.z > 6) {
       resetObstacle(obstacle);
     }
   });
@@ -413,33 +461,16 @@ function updateObstacles() {
   function resetObstacle(obstacle) {
     obstacle.position.z = -20; // Reset to starting position
     obstacle.position.x = Math.random() * 20 - 5; // Increase range for more space
-
     obstacle.passed = false;
 }
 
 // Ensure the number of obstacles doesn't grow too large
 setInterval(() => {
-  if (obstacles.length <  10) { // Limit to a reasonable number of obstacles
+  if (obstacles.length <  5) { // Limit to a reasonable number of obstacles
     createObstacles();
   }
 }, 3000);
 
-  // camera.position.z = 10;
-  // if (player) {
-  //   camera.position.lerp(new THREE.Vector3(player.position.x, 3, player.position.z + 10), 0.1);
-  // }
-  
-
-  // //  camera.lookAt(new THREE.Vector3(0,3,0))
-  //   scene.add(camera)
-
-  // camera.up.set(0, 1, 0); // Set the camera's "up" vector to always point upwards in world space
-  // const planeHeight = 0; // y position of the ground plane
-  // camera.position.y = Math.max(camera.position.y, planeHeight + 1); // Keep camera above the ground
-  
-  // camera.position.set(0,3,10)
-  // camera.lookAt(0,1,0)
-  // camecamera.lookAt(0,0,0)ra.lookAt(cube.position)
   scene.add(camera)
   
   
@@ -462,29 +493,25 @@ setInterval(() => {
 //         camera.lookAt(player.position.x, player.position.y, player.position.z);
 //     }
 // }
-const cameraDistance = 8; // Adjust the distance as needed
+const cameraDistance = 7; // Adjust the distance as needed
 
 // Set the initial camera position to be farther from the player
 camera.position.set(0, 5, 10); // Keep the camera near the scene
-
-camera.lookAt(0, 0, 0); // Always look at the player
-
+camera.lookAt(new THREE.Vector3(0,3,0))
 // Optionally, you can add some controls to move the camera slightly around the player (e.g., orbit controls)
 
-const updateCamera = () => {
-  // If you want to dynamically adjust camera position based on user interaction or gameplay
-  camera.position.x = player.position.x;
-  camera.position.z = player.position.z + cameraDistance; // Maintain distance from the player
-
-  // Ensure the camera always looks at the player
-  camera.lookAt(player.position);
-};
-
-
+function updateCamera() {
+  if (player && player.position) {
+    camera.position.x = player.position.x;
+    camera.position.z = player.position.z + 8; // Ensure camera stays behind
+    camera.lookAt(player.position);
+  } else {
+    console.warn("Player or player position is undefined.");
+  }
+}
   const controls = new OrbitControls(camera,canvas)
   controls.enableDamping=true;
   controls.enableZoom = true; // Enable pinch zoom
-  controls.enableRotate = true;
   controls.maxDistance = 25;  // Limit zoom distance
  controls.minDistance = 5;   // Avoid zooming too close
 
@@ -571,98 +598,99 @@ const updateCamera = () => {
 // window.addEventListener('touchend', () => {
 //   isTouching = false;
 // });// Create joystick and handle elements
-let joystick = document.createElement('div');
-joystick.style.position = 'absolute';
-joystick.style.bottom = '20px';
-joystick.style.left = '20px';
-joystick.style.borderRadius = '50%';
-joystick.style.background = 'rgba(0, 0, 0, 0.5)';
-joystick.style.touchAction = 'none'; // Prevents the default touch behavior (scrolling/pinch)
+// let joystick = document.createElement('div');
+// joystick.style.position = 'absolute';
+// joystick.style.bottom = '20px';
+// joystick.style.left = '20px';
+// joystick.style.borderRadius = '50%';
+// joystick.style.background = 'rgba(0, 0, 0, 0.5)';
+// joystick.style.touchAction = 'none'; // Prevents the default touch behavior (scrolling/pinch)
 
-// Append the joystick to the body
-document.body.appendChild(joystick);
+// // Append the joystick to the body
+// document.body.appendChild(joystick);
 
-// Handle element inside the joystick
-let handle = document.createElement('div');
-handle.style.position = 'absolute';
-handle.style.borderRadius = '50%';
-handle.style.background = 'rgba(255, 255, 255, 0.8)';
-joystick.appendChild(handle);
+// // Handle element inside the joystick
+// let handle = document.createElement('div');
+// handle.style.position = 'absolute';
+// handle.style.borderRadius = '50%';
+// handle.style.background = 'rgba(255, 255, 255, 0.8)';
+// joystick.appendChild(handle);
 
-let isDragging = false;
-let startTouch = { x: 0, y: 0 };
+// let isDragging = false;
+// let startTouch = { x: 0, y: 0 };
 
-// Dynamically set joystick size based on screen width
-const setJoystickSize = () => {
-  const screenWidth = window.innerWidth;
+// // Dynamically set joystick size based on screen width
+// const setJoystickSize = () => {
+//   const screenWidth = window.innerWidth;
 
-  // Set the joystick size to be 20% of the screen width, but with a minimum size of 100px and a maximum of 200px
-  const joystickSize = Math.min(Math.max(screenWidth * 0.2, 100), 200);
-  joystick.style.width = `${joystickSize}px`;
-  joystick.style.height = `${joystickSize}px`;
+//   // Set the joystick size to be 20% of the screen width, but with a minimum size of 100px and a maximum of 200px
+//   const joystickSize = Math.min(Math.max(screenWidth * 0.2, 100), 200);
+//   joystick.style.width = `${joystickSize}px`;
+//   joystick.style.height = `${joystickSize}px`;
 
-  // Set the handle size to 50% of the joystick size
-  const handleSize = joystickSize / 2;
-  handle.style.width = `${handleSize}px`;
-  handle.style.height = `${handleSize}px`;
+//   // Set the handle size to 50% of the joystick size
+//   const handleSize = joystickSize / 2;
+//   handle.style.width = `${handleSize}px`;
+//   handle.style.height = `${handleSize}px`;
 
-  // Center the handle in the joystick
-  handle.style.left = `${(joystickSize - handleSize) / 2}px`;
-  handle.style.top = `${(joystickSize - handleSize) / 2}px`;
-};
+//   // Center the handle in the joystick
+//   handle.style.left = `${(joystickSize - handleSize) / 2}px`;
+//   handle.style.top = `${(joystickSize - handleSize) / 2}px`;
+// };
 
-// Call the function initially to set the size
-setJoystickSize();
+// // Call the function initially to set the size
+// setJoystickSize();
+
 
 // Adjust joystick size on window resize
-window.addEventListener('resize', setJoystickSize);
+// window.addEventListener('resize', setJoystickSize);
 
 // Joystick interaction logic
-joystick.addEventListener('touchstart', (e) => {
-  isDragging = true;
-  startTouch.x = e.touches[0].clientX;
-  startTouch.y = e.touches[0].clientY;
-});
+// joystick.addEventListener('touchstart', (e) => {
+//   isDragging = true;
+//   startTouch.x = e.touches[0].clientX;
+//   startTouch.y = e.touches[0].clientY;
+// });
 
-joystick.addEventListener('touchmove', (e) => {
-  if (isDragging) {
-    const rect = joystick.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
+// joystick.addEventListener('touchmove', (e) => {
+//   if (isDragging) {
+//     const rect = joystick.getBoundingClientRect();
+//     const centerX = rect.left + rect.width / 2;
+//     const centerY = rect.top + rect.height / 2;
 
-    // Calculate movement deltas
-    const deltaX = e.touches[0].clientX - centerX;
-    const deltaY = e.touches[0].clientY - centerY;
+//     // Calculate movement deltas
+//     const deltaX = e.touches[0].clientX - centerX;
+//     const deltaY = e.touches[0].clientY - centerY;
 
-    // Limit the joystick handle's movement within the joystick boundary
-    const distance = Math.min(Math.sqrt(deltaX * deltaX + deltaY * deltaY), rect.width / 2);
-    const angle = Math.atan2(deltaY, deltaX);
+//     // Limit the joystick handle's movement within the joystick boundary
+//     const distance = Math.min(Math.sqrt(deltaX * deltaX + deltaY * deltaY), rect.width / 2);
+//     const angle = Math.atan2(deltaY, deltaX);
 
-    // Move the handle within the boundary
-    handle.style.left = `${centerX + Math.cos(angle) * distance - handle.offsetWidth / 2}px`;
-    handle.style.top = `${centerY + Math.sin(angle) * distance - handle.offsetHeight / 2}px`;
+//     // Move the handle within the boundary
+//     handle.style.left = `${centerX + Math.cos(angle) * distance - handle.offsetWidth / 2}px`;
+//     handle.style.top = `${centerY + Math.sin(angle) * distance - handle.offsetHeight / 2}px`;
 
-    // Control the player based on the handle's position
-    const moveFactor = distance / (rect.width / 2);
-    player.position.x += Math.cos(angle) * moveFactor * 0.1;
-    player.position.z += Math.sin(angle) * moveFactor * 0.1;
-  }
-});
+//     // Control the player based on the handle's position
+//     const moveFactor = distance / (rect.width / 2);
+//     player.position.x += Math.cos(angle) * moveFactor * 0.1;
+//     player.position.z += Math.sin(angle) * moveFactor * 0.1;
+//   }
+// });
 
-joystick.addEventListener('touchend', () => {
-  isDragging = false;
+// joystick.addEventListener('touchend', () => {
+//   isDragging = false;
 
-  // Reset the handle position to the center after touch ends
-  handle.style.left = `${(joystick.offsetWidth - handle.offsetWidth) / 2}px`;
-  handle.style.top = `${(joystick.offsetHeight - handle.offsetHeight) / 2}px`;
-});
+//   // Reset the handle position to the center after touch ends
+//   handle.style.left = `${(joystick.offsetWidth - handle.offsetWidth) / 2}px`;
+//   handle.style.top = `${(joystick.offsetHeight - handle.offsetHeight) / 2}px`;
+// });
 
-// Optional: Add touch cancel event to handle edge cases when touch is lost
-joystick.addEventListener('touchcancel', () => {
-  isDragging = false;
-  handle.style.left = `${(joystick.offsetWidth - handle.offsetWidth) / 2}px`;
-  handle.style.top = `${(joystick.offsetHeight - handle.offsetHeight) / 2}px`;
-});
+// // Optional: Add touch cancel event to handle edge cases when touch is lost
+// joystick.addEventListener('touchcancel', () => {
+//   isDragging = false;
+//   handle.style.left = `${(joystick.offsetWidth - handle.offsetWidth) / 2}px`;
+//   handle.style.top = `${(joystick.offsetHeight - handle.offsetHeight) / 2}px`;
+// });
 
 
 
@@ -720,10 +748,10 @@ if(event.key ==='ArrowRight')
       // Increase game difficulty over time
       function increaseDifficulty() {
         if (!gameOver) {
-          speed += 0.0001;
+          speed += 0.000001;
         }
       }
-      setInterval(increaseDifficulty, 40000);
+      setInterval(increaseDifficulty, 100000);
       
       
     
@@ -756,57 +784,61 @@ if(event.key ==='ArrowRight')
         });
       }
       
-      // Handle game over logic
+
       function triggerGameOver() {
         gameOver = true;
-        
-         // Pause the background music
-  backgroundMusic.pause();
-
-  // Play the game over sound
-  gameOverSound.play();
-        // Display the restart button
+      
+        // Pause the background music
+        backgroundMusic.pause();
+      
+        // Play the game over sound
+        gameOverSound.play();
+      
+        // Create and style the restart button
         const button = document.createElement('button');
         button.innerText = 'Restart Game';
-        button.style.position = 'absolute';
-        button.style.top = '80%';
-        button.style.left = '50%';
-        button.style.transform = 'translate(-50%, -50%)';
-        button.style.padding = '15px 30px';
-        button.style.fontSize = '24px';
-        button.style.fontWeight = 'bold';
-        button.style.backgroundColor = 'lightblue';
-        button.style.border = 'none';
-        button.style.borderRadius = '10px';
-        button.style.color = '#fff';
-        button.style.cursor = 'pointer';
-        button.style.zIndex = '1000';
-        button.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
-        button.style.transition = 'all 0.3s ease';
-        
-        button.onmouseover = () => button.style.backgroundColor = 'lightblue';
-        button.onmouseout = () => button.style.backgroundColor = '#28a745';
+        Object.assign(button.style, {
+          position: 'absolute',
+          top: '80%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          padding: '15px 30px',
+          fontSize: '24px',
+          fontWeight: 'bold',
+          backgroundColor: 'lightblue',
+          border: 'none',
+          borderRadius: '10px',
+          color: '#fff',
+          cursor: 'pointer',
+          zIndex: '1000',
+          boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.3s ease',
+        });
+        button.onmouseover = () => (button.style.backgroundColor = '#1e90ff');
+        button.onmouseout = () => (button.style.backgroundColor = 'lightblue');
       
         // Create game over overlay
         const gameOverOverlay = document.createElement("div");
-        gameOverOverlay.style.position = "fixed";
-        gameOverOverlay.style.top = "0";
-        gameOverOverlay.style.left = "0";
-        gameOverOverlay.style.width = "100%";
-        gameOverOverlay.style.height = "100%";
-        gameOverOverlay.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-        gameOverOverlay.style.color = "#fff";
-        gameOverOverlay.style.display = "flex";
-        gameOverOverlay.style.flexDirection = "column";
-        gameOverOverlay.style.justifyContent = "center";
-        gameOverOverlay.style.alignItems = "center";
-        gameOverOverlay.style.fontSize = "2rem";
+        Object.assign(gameOverOverlay.style, {
+          position: "fixed",
+          top: "0",
+          left: "0",
+          width: "100%",
+          height: "100%",
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          color: "#fff",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: "2rem",
+        });
         gameOverOverlay.innerHTML = `
           <p>Game Over!</p>
           <p>Your Final Score: ${score}</p>
-          <p>Press R to Restart or Double Tap the button below</p>
+          <p>Press "R" to Restart or Double Tap the Button Below</p>
         `;
-        gameOverOverlay.appendChild(button); // Add the button to the overlay
+        gameOverOverlay.appendChild(button);
       
         // Cancel the animation loop
         cancelAnimationFrame(animationFrameId);
@@ -824,42 +856,152 @@ if(event.key ==='ArrowRight')
         window.addEventListener("keydown", keyListener);
       }
       
-     function restartGame() {
-  gameOver = false;
-  score = 0;
-  speed = 0.08;
-  player.position.set(0, 1, 0);
 
-  // Play background music
-  backgroundMusic.play();
+      
+      function restartGame() {
+        gameOver = false;
+        score = 0;
+        speed = 0.08;
+        player.position.set(0, 1, 0);
+      
+        // Play background music
+        backgroundMusic.play();
+      
+        // Reset obstacle positions
+        obstacles.forEach((obstacle, index) => {
+          obstacle.position.z = -20 - index * 10;
+          obstacle.passed = false;
+        });
+      
+        // Remove the game over overlay
+        const gameOverOverlay = document.querySelector("div");
+        if (gameOverOverlay) {
+          document.body.removeChild(gameOverOverlay);
+        }
+      
 
-  // Reset obstacle positions
-  obstacles.forEach((obstacle, index) => {
-    obstacle.position.z = -20 - index * 10;
-    obstacle.passed = false;
-  });
+        setupJoystick()
+        // Reset score display
+        scoreElement.innerHTML = `Score: ${score}`;
+      
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
+      
+        // Restart the animation loop
+        animate();
+      }
+      
+      // Tilt Control Logic
+      let isTiltControlEnabled = false;
+      window.addEventListener("deviceorientation", (event) => {
+        if (isTiltControlEnabled && !gameOver) {
+          const tiltX = event.gamma; // Left/Right tilt
+          const tiltY = event.beta; // Forward/Backward tilt
+      
+          // Map tilt to player movement
+          player.position.x += (tiltX / 50) * 0.5; // Adjust sensitivity
+          player.position.z += (tiltY / 50) * 0.5;
+        }
+      });
+      
+      // Toggle Control UI
 
-  // Remove the game over overlay
-  const gameOverOverlay = document.querySelector("div");
-  if (gameOverOverlay) {
-    document.body.removeChild(gameOverOverlay);
-  }
+      // Style the control toggle button for a glass look
+const controlToggle = document.createElement("button");
+controlToggle.innerText = "Switch to Tilt Control";
+controlToggle.style.position = "absolute";
+controlToggle.style.top = "10px";
+controlToggle.style.right = "10px";
+controlToggle.style.padding = "12px 20px";
+controlToggle.style.fontSize = "16px";
+controlToggle.style.fontWeight = "bold";
+controlToggle.style.color = "#ffffff"; // White text for contrast
+controlToggle.style.background = "rgba(255, 255, 255, 0.2)"; // Transparent white
+controlToggle.style.border = "1px solid rgba(255, 255, 255, 0.3)"; // Subtle border
+controlToggle.style.borderRadius = "12px";
+controlToggle.style.backdropFilter = "blur(10px)"; // Glassmorphism blur effect
+controlToggle.style.webkitBackdropFilter = "blur(10px)"; // For Safari support
+controlToggle.style.boxShadow = "0px 4px 15px rgba(0, 0, 0, 0.2)"; // Soft shadow
+controlToggle.style.transition = "all 0.3s ease";
+controlToggle.style.cursor = "pointer";
+controlToggle.style.zIndex = "1000";
+document.body.appendChild(controlToggle);
 
-  // Re-add the joystick and handle to the DOM
-  if (!document.body.contains(joystick)) {
-    document.body.appendChild(joystick);
-  }
+// Hover effects
+controlToggle.onmouseover = () => {
+  controlToggle.style.background = "rgba(255, 255, 255, 0.3)";
+  controlToggle.style.boxShadow = "0px 6px 20px rgba(0, 0, 0, 0.3)";
+};
+controlToggle.onmouseout = () => {
+  controlToggle.style.background = "rgba(255, 255, 255, 0.2)";
+  controlToggle.style.boxShadow = "0px 4px 15px rgba(0, 0, 0, 0.2)";
+};
 
-  if (!joystick.contains(handle)) {
-    joystick.appendChild(handle);
-  }
+// Click effect
+controlToggle.onmousedown = () => {
+  controlToggle.style.transform = "scale(0.95)";
+};
+controlToggle.onmouseup = () => {
+  controlToggle.style.transform = "scale(1)";
+};
 
-  // Update the score display
-  scoreElement.innerHTML = `Score: ${score}`;
+// Add event listener for functionality
+controlToggle.addEventListener("click", () => {
+  isTiltControlEnabled = !isTiltControlEnabled;
+  controlToggle.innerText = isTiltControlEnabled
+    ? " Joystick Control"
+    : " Tilt Control";
+});
 
-  // Restart the animation loop
-  animate();
-}
+      
+      // Joystick Setup
+      function setupJoystick() {
+        const joystick = document.createElement("div");
+        Object.assign(joystick.style, {
+          position: "absolute",
+          bottom: "5%",
+          left: "5%",
+          width: "120px",
+          height: "120px",
+          borderRadius: "50%",
+          background: "rgba(0, 0, 0, 0.5)",
+        });
+        document.body.appendChild(joystick);
+      
+        const handle = document.createElement("div");
+        Object.assign(handle.style, {
+          position: "absolute",
+          width: "60px",
+          height: "60px",
+          borderRadius: "50%",
+          background: "rgba(255, 255, 255, 0.8)",
+          left: "30px",
+          top: "30px",
+        });
+        joystick.appendChild(handle);
+      
+        let isDragging = false;
+        joystick.addEventListener("touchstart", () => (isDragging = true));
+        joystick.addEventListener("touchmove", (e) => {
+          if (isDragging) {
+            const rect = joystick.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+      
+            const deltaX = e.touches[0].clientX - centerX;
+            const deltaY = e.touches[0].clientY - centerY;
+            const angle = Math.atan2(deltaY, deltaX);
+      
+            player.position.x += Math.cos(angle) * 0.1;
+            player.position.z += Math.sin(angle) * 0.1;
+          }
+        });
+        joystick.addEventListener("touchend", () => (isDragging = false));
+      }
+      
+      setupJoystick();
+      
 
 
       
@@ -904,14 +1046,20 @@ if(event.key ==='ArrowRight')
     if(player){
       updateCamera()
     }
+
+    if (!gameOver) {
+      updateCamera(); 
     updatePlayer()
     updateObstacles()
     increaseDifficulty()
     updateScore()
+updateGround() 
+
+    }
     checkGameOver(player, obstacles);
     controls.target.set(0, 0, 0);
     controls.update()
-    updateGround() 
+    
     // updateHighway()
     // ground.position.z += speed;
     // if(ground.position.z > 10 ){
