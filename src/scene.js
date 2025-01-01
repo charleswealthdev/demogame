@@ -570,60 +570,99 @@ const updateCamera = () => {
 
 // window.addEventListener('touchend', () => {
 //   isTouching = false;
-// });
+// });// Create joystick and handle elements
 let joystick = document.createElement('div');
 joystick.style.position = 'absolute';
 joystick.style.bottom = '20px';
 joystick.style.left = '20px';
-joystick.style.width = '100px';
-joystick.style.height = '100px';
 joystick.style.borderRadius = '50%';
 joystick.style.background = 'rgba(0, 0, 0, 0.5)';
+joystick.style.touchAction = 'none'; // Prevents the default touch behavior (scrolling/pinch)
+
+// Append the joystick to the body
 document.body.appendChild(joystick);
 
+// Handle element inside the joystick
 let handle = document.createElement('div');
 handle.style.position = 'absolute';
-handle.style.width = '50px';
-handle.style.height = '50px';
 handle.style.borderRadius = '50%';
 handle.style.background = 'rgba(255, 255, 255, 0.8)';
-handle.style.left = '25px';
-handle.style.top = '25px';
 joystick.appendChild(handle);
 
 let isDragging = false;
+let startTouch = { x: 0, y: 0 };
 
-// Define the ground boundaries (adjust values as per your ground size)
-const groundLimits = {
-  minX: -10, // Minimum X-coordinate
-  maxX: 10,  // Maximum X-coordinate
-  minZ: -10, // Minimum Z-coordinate
-  maxZ: 10   // Maximum Z-coordinate
+// Dynamically set joystick size based on screen width
+const setJoystickSize = () => {
+  const screenWidth = window.innerWidth;
+
+  // Set the joystick size to be 20% of the screen width, but with a minimum size of 100px and a maximum of 200px
+  const joystickSize = Math.min(Math.max(screenWidth * 0.2, 100), 200);
+  joystick.style.width = `${joystickSize}px`;
+  joystick.style.height = `${joystickSize}px`;
+
+  // Set the handle size to 50% of the joystick size
+  const handleSize = joystickSize / 2;
+  handle.style.width = `${handleSize}px`;
+  handle.style.height = `${handleSize}px`;
+
+  // Center the handle in the joystick
+  handle.style.left = `${(joystickSize - handleSize) / 2}px`;
+  handle.style.top = `${(joystickSize - handleSize) / 2}px`;
 };
 
-joystick.addEventListener('touchstart', () => { isDragging = true; });
+// Call the function initially to set the size
+setJoystickSize();
+
+// Adjust joystick size on window resize
+window.addEventListener('resize', setJoystickSize);
+
+// Joystick interaction logic
+joystick.addEventListener('touchstart', (e) => {
+  isDragging = true;
+  startTouch.x = e.touches[0].clientX;
+  startTouch.y = e.touches[0].clientY;
+});
+
 joystick.addEventListener('touchmove', (e) => {
   if (isDragging) {
     const rect = joystick.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
 
-
+    // Calculate movement deltas
     const deltaX = e.touches[0].clientX - centerX;
     const deltaY = e.touches[0].clientY - centerY;
+
+    // Limit the joystick handle's movement within the joystick boundary
+    const distance = Math.min(Math.sqrt(deltaX * deltaX + deltaY * deltaY), rect.width / 2);
     const angle = Math.atan2(deltaY, deltaX);
 
-    // Calculate the new position
-    const newX = player.position.x + Math.cos(angle) * 0.1;
-    const newZ = player.position.z + Math.sin(angle) * 0.1;
+    // Move the handle within the boundary
+    handle.style.left = `${centerX + Math.cos(angle) * distance - handle.offsetWidth / 2}px`;
+    handle.style.top = `${centerY + Math.sin(angle) * distance - handle.offsetHeight / 2}px`;
 
-    // Apply boundaries
-    player.position.x = Math.min(Math.max(newX, groundLimits.minX), groundLimits.maxX);
-    player.position.z = Math.min(Math.max(newZ, groundLimits.minZ), groundLimits.maxZ);
+    // Control the player based on the handle's position
+    const moveFactor = distance / (rect.width / 2);
+    player.position.x += Math.cos(angle) * moveFactor * 0.1;
+    player.position.z += Math.sin(angle) * moveFactor * 0.1;
   }
 });
-joystick.addEventListener('touchend', () => { isDragging = false; });
 
+joystick.addEventListener('touchend', () => {
+  isDragging = false;
+
+  // Reset the handle position to the center after touch ends
+  handle.style.left = `${(joystick.offsetWidth - handle.offsetWidth) / 2}px`;
+  handle.style.top = `${(joystick.offsetHeight - handle.offsetHeight) / 2}px`;
+});
+
+// Optional: Add touch cancel event to handle edge cases when touch is lost
+joystick.addEventListener('touchcancel', () => {
+  isDragging = false;
+  handle.style.left = `${(joystick.offsetWidth - handle.offsetWidth) / 2}px`;
+  handle.style.top = `${(joystick.offsetHeight - handle.offsetHeight) / 2}px`;
+});
 
 
 
