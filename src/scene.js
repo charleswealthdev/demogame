@@ -267,7 +267,7 @@ const groundMaterial = new THREE.MeshStandardMaterial({
 
   const groundTiles = [];
   const groundCount = 2;
-  let speed = 0.2; 
+  let speed = 0.3; 
   
   for (let i = 0; i < groundCount; i++) {
     const ground = new THREE.Mesh(groundGeo, groundMaterial);
@@ -402,7 +402,7 @@ function createObstacles() {
 
     // Randomize obstacle size
     const size = Math.random() * 2 + 1; // Random size between 1 and 3
-    obstacle.scale.set(1,1,1);
+    obstacle.scale.set(0.7,0.7,0.7);
 
     // Randomize position
     obstacle.position.set(
@@ -892,17 +892,26 @@ if(event.key ==='ArrowRight')
       }
       
       // Tilt Control Logic
-      let isTiltControlEnabled = false;
-      window.addEventListener("deviceorientation", (event) => {
-        if (isTiltControlEnabled && !gameOver) {
-          const tiltX = event.gamma; // Left/Right tilt
-          const tiltY = event.beta; // Forward/Backward tilt
-      
-          // Map tilt to player movement
-          player.position.x += (tiltX / 50) * 0.5; // Adjust sensitivity
-          player.position.z += (tiltY / 50) * 0.5;
-        }
-      });
+   // Enable tilt control and set sensitivity
+let isTiltControlEnabled = true;
+const tiltSensitivity = 0.2; // Adjust sensitivity for smoother control
+
+// Event listener for device orientation
+window.addEventListener("deviceorientation", (event) => {
+  if (isTiltControlEnabled && !gameOver) {
+    const tiltX = event.gamma; // Left/Right tilt (-90 to +90 degrees)
+    const tiltY = event.beta; // Forward/Backward tilt (0 to 180 degrees)
+
+    // Map tilt to player movement
+    const deltaX = (tiltX / 45) * tiltSensitivity; // Scale gamma (-45 to +45 for smooth movement)
+    const deltaZ = (tiltY / 90 - 1) * tiltSensitivity; // Scale beta (90 is neutral)
+
+    // Update player position with clamping to keep within bounds
+    player.position.x = THREE.MathUtils.clamp(player.position.x + deltaX, -5, 5); // Adjust -5, 5 as boundaries
+    player.position.z = THREE.MathUtils.clamp(player.position.z + deltaZ, -20, 0); // Adjust -20, 0 as boundaries
+  }
+});
+
       
       // Toggle Control UI
 
@@ -981,22 +990,48 @@ controlToggle.addEventListener("click", () => {
         joystick.appendChild(handle);
       
         let isDragging = false;
-        joystick.addEventListener("touchstart", () => (isDragging = true));
+        let initialTouch = null;
+        
+        // Add event listeners for touch interactions
+        joystick.addEventListener("touchstart", (e) => {
+          isDragging = true;
+          initialTouch = e.touches[0];
+        });
+        
         joystick.addEventListener("touchmove", (e) => {
-          if (isDragging) {
+          if (isDragging && initialTouch) {
             const rect = joystick.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
-      
+        
+            // Calculate movement direction and intensity
             const deltaX = e.touches[0].clientX - centerX;
             const deltaY = e.touches[0].clientY - centerY;
             const angle = Math.atan2(deltaY, deltaX);
-      
-            player.position.x += Math.cos(angle) * 0.1;
-            player.position.z += Math.sin(angle) * 0.1;
+            const distance = Math.min(Math.hypot(deltaX, deltaY), rect.width / 2); // Cap to joystick radius
+        
+            // Normalize movement intensity (e.g., based on joystick size)
+            const normalizedX = (distance / (rect.width / 2)) * Math.cos(angle);
+            const normalizedY = (distance / (rect.height / 2)) * Math.sin(angle);
+        
+            // Update player position with scaling factor
+            const movementSpeed = 0.1; // Adjust as needed for responsiveness
+            player.position.x += normalizedX * movementSpeed;
+            player.position.z += normalizedY * movementSpeed;
+        
+            // Optional: Update joystick visual to reflect direction
+            joystick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
           }
         });
-        joystick.addEventListener("touchend", () => (isDragging = false));
+        
+        joystick.addEventListener("touchend", () => {
+          isDragging = false;
+          initialTouch = null;
+        
+          // Reset joystick position visually
+          joystick.style.transform = "translate(0, 0)";
+        });
+        
       }
       
       setupJoystick();
