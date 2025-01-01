@@ -60,14 +60,26 @@ const audioLoader = new THREE.AudioLoader(loadingManager);
 
 
 
+
 const rgbeLoader = new RGBELoader();
-rgbeLoader.load('/shanghai_bund_2k.hdr', (texture) => {
+rgbeLoader.load('/shanghai_bund_1k.hdr', (texture) => {
   texture.mapping = THREE.EquirectangularReflectionMapping;
   scene.environment = texture; // Apply to scene
 scene.environment= texture
 });
 
-// loaders
+// rgbeLoader.load('/street_lamp_1k.hdr', (texture) => {
+//   texture.mapping = THREE.EquirectangularReflectionMapping;
+//   scene.environment = texture;
+
+//   renderer.toneMappingExposure = 0.6; // Reduce HDR brightness
+
+//   const light = new THREE.DirectionalLight(0xffffff, 0.4);
+//   light.position.set(5, 10, 5);
+//   scene.add(light);
+// });
+
+
 
 camera.add(listener);
 
@@ -165,6 +177,10 @@ scene.add(directionalLight);
 
   let player, mixer, actions = {};
 
+  dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/'); // Set the path to Draco decoder files
+ 
+  // Attach DracoLoader to GLTFLoader
+  gltfLoader.setDRACOLoader(dracoLoader);
   // Load Model
   gltfLoader.load('/myavatar.glb', (gltf) => {
     player = gltf.scene;
@@ -211,76 +227,95 @@ scene.add(directionalLight);
 // });
 
 
+const textureTest = textureLoader.load('/cloudy-veined-quartz-light-unity/cloudy-veined-quartz-light_preview.jpg')
+const textureNormal = textureLoader.load('/rocky-worn-ground-bl/rocky-worn-ground-normal-ogl.png')
+const textureAO = textureLoader.load('rocky-worn-ground-bl/rocky-worn-ground-ao.png')
+const textureM = textureLoader.load('rocky-worn-ground-bl/rocky-worn-ground1.png')
+const textureR = textureLoader.load('rocky-worn-ground-bl/rocky-worn-ground_Roughness.png')
   
 //   // create and add ground to the scene
 
-//   const groundGeo = new THREE.PlaneGeometry(50, 50);
-//    const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
-//   // const ground = new THREE.Mesh(groundGeo, groundMaterial);
-//   // ground.rotation.x = -Math.PI / 2;
-//   // ground.position.y = 0;
-//   // ground.receiveShadow = true;
-//   // scene.add(ground);
+const groundMaterial = new THREE.MeshStandardMaterial({
+  map: textureTest,
+  normalMap: textureNormal,
+  roughnessMap: textureR,
+  aoMap: textureM,
+  side: THREE.DoubleSide,
+  envMap: scene.environment,
+  metalness: 1.0,
+  //     roughness: 0.0, // Slight displacement for added depth
+});
 
-//   const groundTiles = [];
-//   const groundCount = 2;
-  
-//   for (let i = 0; i < groundCount; i++) {
-//     const ground = new THREE.Mesh(groundGeo, groundMaterial);
-//     ground.rotation.x = -Math.PI / 2;
-//     ground.position.z = -i * 50; // Adjust for seamless tiling
-//     ground.receiveShadow = true;
-//     scene.add(ground);
-//     groundTiles.push(ground);
-//   }
+  const groundGeo = new THREE.PlaneGeometry(50, 50);
 
 
   
-//   function updateGround() {
-//     groundTiles.forEach((ground) => {
-//       ground.position.z += speed;
-//       if (ground.position.z > 50) {
-//         ground.position.z -= groundCount * 50;
-//       }
-//     });
-//   }
+  // const ground = new THREE.Mesh(groundGeo, groundMaterial);
+  // ground.rotation.x = -Math.PI / 2;
+  // ground.position.y = 0;
+  // ground.receiveShadow = true;
+  // scene.add(ground);
 
-let speed = 0.08; // Start with a slower speed
-
-const highwayTiles = [];
-  const highwayCount = 2; // Number of highway tiles
-  const highwayLength = 50; // Length of each highway tile
-
-gltfLoader.load('/road_hd.glb', (gltf3) => {
-  const highwayModel = gltf3.scene;
-
-  // Array to hold the highway tiles
+  const groundTiles = [];
+  const groundCount = 2;
   
-  // Initialize and position highway tiles
-  for (let i = 0; i < highwayCount; i++) {
-    const highwayTile = highwayModel.clone(); // Clone the model for each tile
-    highwayTile.position.set(0, 0, -i * highwayLength); // Position the tiles sequentially
-    highwayTile.scale.set(10, 1, 10); // Adjust scale if needed
-    highwayTile.rotation.y = Math.PI;
-    highwayTile.receiveShadow=true;
-    highwayTile.castShadow = true;
-
-    scene.add(highwayTile); // Add to the scene
-    highwayTiles.push(highwayTile); // Add to the array
+  for (let i = 0; i < groundCount; i++) {
+    const ground = new THREE.Mesh(groundGeo, groundMaterial);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.z = -i * 50; // Adjust for seamless tiling
+    ground.receiveShadow = true;
+    ground.castShadow=true
+    scene.add(ground);
+    groundTiles.push(ground);
   }
 
 
-})
+  
+  function updateGround() {
+    groundTiles.forEach((ground) => {
+      ground.position.z += speed;
+      if (ground.position.z > 50) {
+        ground.position.z -= groundCount * 50;
+      }
+    });
+  }
+
+let speed = 0.08; // Start with a slower speed
+
+// const highwayTiles = [];
+//   const highwayCount = 2; // Number of highway tiles
+//   const highwayLength = 20; // Length of each highway tile
+
+// gltfLoader.load('/road_hd.glb', (gltf3) => {
+//   const highwayModel = gltf3.scene;
+
+//   // Array to hold the highway tiles
+  
+//   // Initialize and position highway tiles
+//   for (let i = 0; i < highwayCount; i++) {
+//     const highwayTile = highwayModel.clone(); // Clone the model for each tile
+//     highwayTile.position.set(0, 0, -i * highwayLength); // Position the tiles sequentially
+//     highwayTile.scale.set(10, 1, 10); // Adjust scale if needed
+//     highwayTile.rotation.y = Math.PI;
+//     highwayTile.receiveShadow=true;
+//     highwayTile.castShadow = true;
+
+//     scene.add(highwayTile); // Add to the scene
+//     highwayTiles.push(highwayTile); // Add to the array
+//   }
 
 
-function updateHighway() {
-  highwayTiles.forEach((tile) => {
-    tile.position.z += speed; // Move tile forward
-    if (tile.position.z > highwayLength) {
-      tile.position.z -= highwayCount * highwayLength; // Wrap around to the back
-    }
-  });
-}
+// })
+
+
+// function updateHighway() {
+//   highwayTiles.forEach((tile) => {
+//     tile.position.z += speed; // Move tile forward
+//     if (tile.position.z > highwayLength) {
+//       tile.position.z -= highwayCount * highwayLength; // Wrap around to the back
+//     }
+//   });
+// }
 
 
 
@@ -427,10 +462,11 @@ setInterval(() => {
 //         camera.lookAt(player.position.x, player.position.y, player.position.z);
 //     }
 // }
-const cameraDistance = 6; // Adjust the distance as needed
+const cameraDistance = 8; // Adjust the distance as needed
 
 // Set the initial camera position to be farther from the player
-camera.position.set(0, 5, cameraDistance); // Adjust these values to control distance and height
+camera.position.set(0, 5, 10); // Keep the camera near the scene
+
 camera.lookAt(0, 0, 0); // Always look at the player
 
 // Optionally, you can add some controls to move the camera slightly around the player (e.g., orbit controls)
@@ -504,37 +540,89 @@ const updateCamera = () => {
 //   camera.position.y -= tiltY * 0.1; // Adjust sensitivity as needed
 // }, false);
 
-let touchStartX = 0;
-let touchStartY = 0;
-let isTouching = false;
+// let touchStartX = 0;
+// let touchStartY = 0;
+// let isTouching = false;
 
-window.addEventListener('touchstart', (e) => {
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
-  isTouching = true;
-});
+// window.addEventListener('touchstart', (e) => {
+//   touchStartX = e.touches[0].clientX;
+//   touchStartY = e.touches[0].clientY;
+//   isTouching = true;
+// });
 
-window.addEventListener('touchmove', (e) => {
-  if (isTouching) {
-    let touchMoveX = e.touches[0].clientX;
-    let touchMoveY = e.touches[0].clientY;
+// window.addEventListener('touchmove', (e) => {
+//   if (isTouching) {
+//     let touchMoveX = e.touches[0].clientX;
+//     let touchMoveY = e.touches[0].clientY;
 
-    // Calculate movement delta
-    const deltaX = touchMoveX - touchStartX;
-    const deltaY = touchMoveY - touchStartY;
+//     // Calculate movement delta
+//     const deltaX = touchMoveX - touchStartX;
+//     const deltaY = touchMoveY - touchStartY;
 
-    // Update player position or other actions
-    player.position.x += deltaX * 0.01; // Adjust movement speed
-    player.position.y += deltaY * 0.01;
+//     // Update player position or other actions
+//     player.position.x += deltaX * 0.01; // Adjust movement speed
+//     player.position.y += deltaY * 0.01;
 
-    touchStartX = touchMoveX;
-    touchStartY = touchMoveY;
+//     touchStartX = touchMoveX;
+//     touchStartY = touchMoveY;
+//   }
+// });
+
+// window.addEventListener('touchend', () => {
+//   isTouching = false;
+// });
+let joystick = document.createElement('div');
+joystick.style.position = 'absolute';
+joystick.style.bottom = '20px';
+joystick.style.left = '20px';
+joystick.style.width = '100px';
+joystick.style.height = '100px';
+joystick.style.borderRadius = '50%';
+joystick.style.background = 'rgba(0, 0, 0, 0.5)';
+document.body.appendChild(joystick);
+
+let handle = document.createElement('div');
+handle.style.position = 'absolute';
+handle.style.width = '50px';
+handle.style.height = '50px';
+handle.style.borderRadius = '50%';
+handle.style.background = 'rgba(255, 255, 255, 0.8)';
+handle.style.left = '25px';
+handle.style.top = '25px';
+joystick.appendChild(handle);
+
+let isDragging = false;
+
+// Define the ground boundaries (adjust values as per your ground size)
+const groundLimits = {
+  minX: -10, // Minimum X-coordinate
+  maxX: 10,  // Maximum X-coordinate
+  minZ: -10, // Minimum Z-coordinate
+  maxZ: 10   // Maximum Z-coordinate
+};
+
+joystick.addEventListener('touchstart', () => { isDragging = true; });
+joystick.addEventListener('touchmove', (e) => {
+  if (isDragging) {
+    const rect = joystick.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+
+    const deltaX = e.touches[0].clientX - centerX;
+    const deltaY = e.touches[0].clientY - centerY;
+    const angle = Math.atan2(deltaY, deltaX);
+
+    // Calculate the new position
+    const newX = player.position.x + Math.cos(angle) * 0.1;
+    const newZ = player.position.z + Math.sin(angle) * 0.1;
+
+    // Apply boundaries
+    player.position.x = Math.min(Math.max(newX, groundLimits.minX), groundLimits.maxX);
+    player.position.z = Math.min(Math.max(newZ, groundLimits.minZ), groundLimits.maxZ);
   }
 });
-
-window.addEventListener('touchend', () => {
-  isTouching = false;
-});
+joystick.addEventListener('touchend', () => { isDragging = false; });
 
 
 
@@ -546,9 +634,9 @@ window.addEventListener('touchend', () => {
   window.addEventListener('keydown', (event) =>{
 if(event.key ==='ArrowLeft')
   moveLeft=true;
-
 if(event.key ==='ArrowRight')
   moveRight=true;
+
   });
 
 
@@ -565,18 +653,6 @@ if(event.key ==='ArrowRight')
       })
 
 
-
-      // let score = 0;
-      // const scoreElement = document.createElement('div')
-      // scoreElement.style.position =  'absolute';
-      // scoreElement.style.top='10px'
-      //   scoreElement.style.left='10px'
-      //   scoreElement.style.color='white'
-      //   scoreElement.style.fontSize= '2rem'
-      //   scoreElement.innerHTML= `Score: ${score}`;
-
-      // document.body.appendChild(scoreElement)
-     
       let gameOver = false; // Game over flag
       let animationFrameId
       let score=0
@@ -626,7 +702,7 @@ if(event.key ==='ArrowRight')
       // Check if the player collides with any obstacles
       function checkGameOver(player, obstacles) {
         obstacles.forEach((obstacle) => {
-
+          
           if (!player || !obstacles || !objectSound || !backgroundMusic) {
             console.error("Player, obstacles, or sound objects are undefined.");
             return;
@@ -636,7 +712,6 @@ if(event.key ==='ArrowRight')
       
           if (playerBox.intersectsBox(obstacleBox)) {
             triggerGameOver();
-          
             backgroundMusic.stop()
           }
         });
@@ -710,33 +785,44 @@ if(event.key ==='ArrowRight')
         window.addEventListener("keydown", keyListener);
       }
       
-      function restartGame() {
-        gameOver = false;
-        score = 0;
-        speed = 0.08;
-        player.position.set(0, 1, 0);
+     function restartGame() {
+  gameOver = false;
+  score = 0;
+  speed = 0.08;
+  player.position.set(0, 1, 0);
 
-        backgroundMusic.play()
-      
-        obstacles.forEach((obstacle, index) => {
-          obstacle.position.z = -20 - index * 10;
-          obstacle.passed = false;
-        });
-      
-        // Remove the game over overlay
-        const gameOverOverlay = document.querySelector("div");
-        if (gameOverOverlay) {
-          document.body.removeChild(gameOverOverlay);
-        }
-      
-        scoreElement.innerHTML = `Score: ${score}`;
-      
-        // Restart the animation loop
-        animate();
-      }
-      
-      setInterval(updateScore, 100);
-      
+  // Play background music
+  backgroundMusic.play();
+
+  // Reset obstacle positions
+  obstacles.forEach((obstacle, index) => {
+    obstacle.position.z = -20 - index * 10;
+    obstacle.passed = false;
+  });
+
+  // Remove the game over overlay
+  const gameOverOverlay = document.querySelector("div");
+  if (gameOverOverlay) {
+    document.body.removeChild(gameOverOverlay);
+  }
+
+  // Re-add the joystick and handle to the DOM
+  if (!document.body.contains(joystick)) {
+    document.body.appendChild(joystick);
+  }
+
+  if (!joystick.contains(handle)) {
+    joystick.appendChild(handle);
+  }
+
+  // Update the score display
+  scoreElement.innerHTML = `Score: ${score}`;
+
+  // Restart the animation loop
+  animate();
+}
+
+
       
 
       
@@ -784,9 +870,10 @@ if(event.key ==='ArrowRight')
     increaseDifficulty()
     updateScore()
     checkGameOver(player, obstacles);
+    controls.target.set(0, 0, 0);
     controls.update()
-    // checkCollision()
-    updateHighway()
+    updateGround() 
+    // updateHighway()
     // ground.position.z += speed;
     // if(ground.position.z > 10 ){
     //   ground.position.z =0;
