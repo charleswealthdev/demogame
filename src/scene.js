@@ -495,23 +495,29 @@ setInterval(() => {
 //         );
 //         camera.lookAt(player.position.x, player.position.y, player.position.z);
 //     }
-// }
-const cameraDistance = 7; // Adjust the distance as needed
+// }// Set the camera position in a fixed, standard position
 
-// Set the initial camera position to be farther from the player
-camera.position.set(0, 5, 10); // Keep the camera near the scene
-camera.lookAt(new THREE.Vector3(0,3,0))
-// Optionally, you can add some controls to move the camera slightly around the player (e.g., orbit controls)
 
+const frontOffset = new THREE.Vector3(0, 2, 5); // In front of the player (adjust for the front view)
+
+const cameraPosition = new THREE.Vector3(0, 5, 15); // Adjust these values as needed
+camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+camera.lookAt(0, 1, 0);  // Look at the player or central point
+
+// Ensure the camera updates each frame
 function updateCamera() {
-  if (player && player.position) {
-    camera.position.x = player.position.x;
-    camera.position.z = player.position.z + 8; // Ensure camera stays behind
-    camera.lookAt(player.position);
-  } else {
-    console.warn("Player or player position is undefined.");
+  if (!gameOver) {
+      // Ensure the camera is always following the player with the standard offset
+      camera.position.x = player.position.x + frontOffset.x; // Track player on X-axis with offset
+      camera.position.y = player.position.y + frontOffset.y; // Fixed height above player
+      camera.position.z = player.position.z + frontOffset.z; // Track player on Z-axis with offset
+
+      // Ensure the camera is looking at the player from behind
+      camera.lookAt(player.position.x, player.position.y, player.position.z);
   }
 }
+
+
   const controls = new OrbitControls(camera,canvas)
   controls.enableDamping=true;
   controls.enableZoom = true; // Enable pinch zoom
@@ -1081,35 +1087,26 @@ joystick.addEventListener("touchend", () => {
       const clock = new THREE.Clock()
   function animate(){
     if (gameOver) return; // Stop updates if the game is over
-
     animationFrameId = requestAnimationFrame(animate);
-
     const delta = clock.getDelta();
     if (mixer) mixer.update(delta);
-
     if(player){
       updateCamera()
     }
 
     if (!gameOver) {
-      updateCamera(); 
-    updatePlayer()
-    updateObstacles()
-    increaseDifficulty()
-    updateScore()
-updateGround() 
-updatePlayerPosition()
-
-    }
+      updatePlayer();
+      updateObstacles();
+      increaseDifficulty();
+      updateScore();
+      updateGround();
+      updatePlayerPosition();
+  }
     checkGameOver(player, obstacles);
     controls.target.set(0, 0, 0);
     controls.update()
     
-    // updateHighway()
-    // ground.position.z += speed;
-    // if(ground.position.z > 10 ){
-    //   ground.position.z =0;
-    // }
+  
 
     renderer.render(scene,camera)
   }
