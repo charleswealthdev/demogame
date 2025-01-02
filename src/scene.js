@@ -632,41 +632,41 @@ setInterval(() => {
 const backOffset = new THREE.Vector3(0, 2, -5); // Back view
 const frontOffset = new THREE.Vector3(0, 2, 5); // Front view
 
-// Define initial camera position
-const cameraPosition = new THREE.Vector3(0, 5, 15); // Adjust these values for initial placement
-camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-camera.lookAt(0, 1, 0); // Look at player or a central point
+// // Define initial camera position
+// const cameraPosition = new THREE.Vector3(0, 5, 15); // Adjust these values for initial placement
+// camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+// camera.lookAt(0, 1, 0); // Look at player or a central point
 
-// Ensure player is defined before using its position
-if (!player || !player.position) {
-  console.error("Player object or its position is not defined.");
-} else {
-  // Set initial camera position to front view relative to player
-  camera.position.copy(player.position.clone().add(frontOffset));
+// // Ensure player is defined before using its position
+// if (!player || !player.position) {
+//   console.error("Player object or its position is not defined.");
+// } else {
+//   // Set initial camera position to front view relative to player
+//   camera.position.copy(player.position.clone().add(frontOffset));
 
-  // Animate camera offset to back view after 3 seconds
-  setTimeout(() => {
-    gsap.fromTo(
-      camera.position,
-      {
-        x: camera.position.x,
-        y: camera.position.y,
-        z: camera.position.z,
-      },
-      {
-        x: player.position.x + backOffset.x,
-        y: player.position.y + backOffset.y,
-        z: player.position.z + backOffset.z,
-        duration: 1.5, // Smooth transition duration
-        ease: "power1.out",
-        onUpdate: () => {
-          // Ensure the camera looks at the player during animation
-          camera.lookAt(player.position);
-        },
-      }
-    );
-  }, 5000); // Start animation after 3 seconds
-}
+//   // Animate camera offset to back view after 3 seconds
+//   setTimeout(() => {
+//     gsap.fromTo(
+//       camera.position,
+//       {
+//         x: camera.position.x,
+//         y: camera.position.y,
+//         z: camera.position.z,
+//       },
+//       {
+//         x: player.position.x + backOffset.x,
+//         y: player.position.y + backOffset.y,
+//         z: player.position.z + backOffset.z,
+//         duration: 1.5, // Smooth transition duration
+//         ease: "power1.out",
+//         onUpdate: () => {
+//           // Ensure the camera looks at the player during animation
+//           camera.lookAt(player.position);
+//         },
+//       }
+//     );
+//   }, 5000); // Start animation after 3 seconds
+// }
 
 
 // Ensure the camera updates each frame
@@ -1069,21 +1069,27 @@ let movementSpeed = 0.1; // Horizontal movement speed (adjustable)
 let maxTilt = 30; // Max allowed tilt (adjust for sensitivity)
 
 // Enable tilt control (listen to device orientation)
+const boundaries = { x: 4, y: 1 }; // Set boundary limits for x-axis and fixed y-axis position
+
 window.addEventListener("deviceorientation", (event) => {
   if (isTiltControlEnabled && !gameOver) {
     const tiltX = event.gamma; // Left/Right tilt (gamma axis)
-    
+
     // Clamp the tilt to the range [-maxTilt, maxTilt] to avoid too fast movement
     const clampedTiltX = Math.max(-maxTilt, Math.min(tiltX, maxTilt));
-    
+
     // Map the tilt to player movement, scaling by movement speed
-    player.position.x += (clampedTiltX / maxTilt) * movementSpeed;
-    
-    // Optional: Limit player movement within a certain range
-    player.position.x = Math.max(-4, Math.min(player.position.x, 4)); // x-axis movement clamped to [-5, 5]
-    
-    // Optional: Keep the player grounded (set Y position fixed)
-    player.position.y = 1; // Set the Y position to a fixed value to stay grounded
+    const deltaX = (clampedTiltX / maxTilt) * movementSpeed;
+    const newX = player.position.x + deltaX;
+
+    // Enforce boundaries for X-axis movement
+    player.position.x = Math.max(-boundaries.x, Math.min(newX, boundaries.x));
+
+    // Keep the player grounded (fixed Y position)
+    player.position.y = boundaries.y;
+
+    // Optional: Log for debugging
+    console.log(`Player position: X=${player.position.x}, Y=${player.position.y}`);
   }
 });
 
