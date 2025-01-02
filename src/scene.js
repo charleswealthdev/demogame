@@ -329,13 +329,123 @@ const groundMaterial = new THREE.MeshStandardMaterial({
 // }
 
 
+// // Array to hold obstacles
+// const obstacles = [];
+
+// // Create obstacles function
+// function createObstacles() {
+//   const textureLoader = new THREE.TextureLoader();
+ 
+
+//   // Randomly choose between different obstacle types (geometries or models)
+//   const obstacleType = Math.floor(Math.random() * 4); // Now selecting from 0 to 3
+
+//   textureLoader.load('/cx3.jpg', (texture) => {
+//     let obstacle;
+
+//     // Material for all geometries
+//     const material = new THREE.MeshStandardMaterial({
+//       map: texture,
+//       transparent: true,
+//       roughness: 1,
+//       metalness: 0.5,
+//     });
+
+//     switch (obstacleType) {
+//       case 0: // Cube
+//         obstacle = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
+//         break;
+
+//       case 1: // Sphere
+//         obstacle = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), material);
+//         break;
+
+//       case 2: // Cone
+//         obstacle = new THREE.Mesh(new THREE.ConeGeometry(1, 2, 32), material);
+//         break;
+
+//       case 3: // Custom 3D Model (GLTF)
+//         const models = [
+//           '/green-goblin_bomb.glb',
+//           '/cherri_bomb.glb',
+//           '/bomb.glb',
+//         ];
+//         const selectedModel = models[Math.floor(Math.random() * models.length)];
+
+//         const gltfLoader = new GLTFLoader()
+
+//         gltfLoader.load(selectedModel, (gltf) => {
+//           const model = gltf.scene;
+
+//           // // Randomize obstacle size
+//           // const size = Math.random() * 2 + 1; // Random size between 1 and 3
+//           model.scale.set(1.4,1.4,1.4);
+
+//           // // Randomize position
+//           model.position.set(
+//             Math.random() * 10 - 5, // Random x position
+//            1.4,               // y position based on size
+//             -20                     // Start far back on the z-axis
+//           );
+
+//           // Enable shadows for model
+//           model.traverse((child) => {
+//             if (child.isMesh) {
+//               child.castShadow = true;
+//               child.receiveShadow = true;
+//             }
+//           });
+
+//           // Add to scene and obstacles array
+//           scene.add(model);
+//           obstacles.push(model);
+//         });
+//         return; // Exit the function to avoid adding a non-existent obstacle below
+//     }
+
+//     // Randomize obstacle size
+//     const size = Math.random() * 2 + 1; // Random size between 1 and 3
+//     obstacle.scale.set(0.7,0.7,0.7);
+
+//     // Randomize position
+//     obstacle.position.set(
+//       Math.random() * 10 - 5, // Random x position
+//       1,               // y position based on size
+//       -20                     // Start far back on the z-axis
+//     );
+
+//     // Enable shadows for obstacle
+//     obstacle.castShadow = true;
+//     obstacle.receiveShadow = true;
+
+//     // Add the obstacle to the scene
+//     scene.add(obstacle);
+
+//     // Store the obstacle for future updates
+//     obstacles.push(obstacle);
+//   });
+// }
+
+// // Call `createObstacles` periodically, e.g., every 6 seconds
+// setInterval(createObstacles, 10000);
+
+
 // Array to hold obstacles
 const obstacles = [];
 
+// Maximum number of active obstacles
+const maxObstacles = 5; // Reduced for easier gameplay
+
+// Minimum distance between obstacles on the z-axis
+const minZDistance = 20; // Increase distance for easier navigation
+
 // Create obstacles function
 function createObstacles() {
+  if (obstacles.length >= maxObstacles) {
+    return; // Prevent adding more obstacles if max limit is reached
+  }
+
   const textureLoader = new THREE.TextureLoader();
- 
 
   // Randomly choose between different obstacle types (geometries or models)
   const obstacleType = Math.floor(Math.random() * 4); // Now selecting from 0 to 3
@@ -372,20 +482,20 @@ function createObstacles() {
         ];
         const selectedModel = models[Math.floor(Math.random() * models.length)];
 
-        const gltfLoader = new GLTFLoader()
+        const gltfLoader = new GLTFLoader();
 
         gltfLoader.load(selectedModel, (gltf) => {
           const model = gltf.scene;
 
-          // // Randomize obstacle size
-          // const size = Math.random() * 2 + 1; // Random size between 1 and 3
-          model.scale.set(1.4,1.4,1.4);
+          model.scale.set(1.2, 1.2, 1.2);
 
-          // // Randomize position
+          // Randomize position
           model.position.set(
             Math.random() * 10 - 5, // Random x position
-           1.4,               // y position based on size
-            -20                     // Start far back on the z-axis
+            1.4, // y position based on size
+            obstacles.length > 0
+              ? obstacles[obstacles.length - 1].position.z - minZDistance
+              : -20 // Start far back on the z-axis
           );
 
           // Enable shadows for model
@@ -399,19 +509,23 @@ function createObstacles() {
           // Add to scene and obstacles array
           scene.add(model);
           obstacles.push(model);
+
+          // Manage obstacle count
+          manageObstacleCount();
         });
         return; // Exit the function to avoid adding a non-existent obstacle below
     }
 
     // Randomize obstacle size
-    const size = Math.random() * 2 + 1; // Random size between 1 and 3
-    obstacle.scale.set(0.7,0.7,0.7);
+    obstacle.scale.set(0.7, 0.7, 0.7);
 
     // Randomize position
     obstacle.position.set(
       Math.random() * 10 - 5, // Random x position
-      1,               // y position based on size
-      -20                     // Start far back on the z-axis
+      1, // y position based on size
+      obstacles.length > 0
+        ? obstacles[obstacles.length - 1].position.z - minZDistance
+        : -20 // Start far back on the z-axis
     );
 
     // Enable shadows for obstacle
@@ -423,11 +537,29 @@ function createObstacles() {
 
     // Store the obstacle for future updates
     obstacles.push(obstacle);
+
+    // Manage obstacle count
+    manageObstacleCount();
   });
 }
 
-// Call `createObstacles` periodically, e.g., every 6 seconds
-setInterval(createObstacles, 10000);
+// Function to remove the oldest obstacles if the limit is exceeded
+function manageObstacleCount() {
+  while (obstacles.length > maxObstacles) {
+    const oldestObstacle = obstacles.shift(); // Remove the oldest obstacle from the array
+
+    // Remove the obstacle from the scene
+    scene.remove(oldestObstacle);
+
+    // Dispose of geometry and materials to free memory
+    if (oldestObstacle.geometry) oldestObstacle.geometry.dispose();
+    if (oldestObstacle.material) oldestObstacle.material.dispose();
+  }
+}
+
+// Call `createObstacles` periodically, e.g., every 8 seconds
+setInterval(createObstacles, 8000); // Create obstacles every 8 seconds
+
 
 //   function updateObstacles(){
 // obstacles.forEach((obstacle)=> {
@@ -496,13 +628,46 @@ setInterval(() => {
 //         camera.lookAt(player.position.x, player.position.y, player.position.z);
 //     }
 // }// Set the camera position in a fixed, standard position
+// Define offsets for camera positions
+const backOffset = new THREE.Vector3(0, 2, -5); // Back view
+const frontOffset = new THREE.Vector3(0, 2, 5); // Front view
 
-
-const frontOffset = new THREE.Vector3(0, 2, 5); // In front of the player (adjust for the front view)
-
-const cameraPosition = new THREE.Vector3(0, 5, 15); // Adjust these values as needed
+// Define initial camera position
+const cameraPosition = new THREE.Vector3(0, 5, 15); // Adjust these values for initial placement
 camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-camera.lookAt(0, 1, 0);  // Look at the player or central point
+camera.lookAt(0, 1, 0); // Look at player or a central point
+
+// Ensure player is defined before using its position
+if (!player || !player.position) {
+  console.error("Player object or its position is not defined.");
+} else {
+  // Set initial camera position to front view relative to player
+  camera.position.copy(player.position.clone().add(frontOffset));
+
+  // Animate camera offset to back view after 3 seconds
+  setTimeout(() => {
+    gsap.fromTo(
+      camera.position,
+      {
+        x: camera.position.x,
+        y: camera.position.y,
+        z: camera.position.z,
+      },
+      {
+        x: player.position.x + backOffset.x,
+        y: player.position.y + backOffset.y,
+        z: player.position.z + backOffset.z,
+        duration: 1.5, // Smooth transition duration
+        ease: "power1.out",
+        onUpdate: () => {
+          // Ensure the camera looks at the player during animation
+          camera.lookAt(player.position);
+        },
+      }
+    );
+  }, 5000); // Start animation after 3 seconds
+}
+
 
 // Ensure the camera updates each frame
 function updateCamera() {
@@ -915,7 +1080,7 @@ window.addEventListener("deviceorientation", (event) => {
     player.position.x += (clampedTiltX / maxTilt) * movementSpeed;
     
     // Optional: Limit player movement within a certain range
-    player.position.x = Math.max(-5, Math.min(player.position.x, 5)); // x-axis movement clamped to [-5, 5]
+    player.position.x = Math.max(-4, Math.min(player.position.x, 4)); // x-axis movement clamped to [-5, 5]
     
     // Optional: Keep the player grounded (set Y position fixed)
     player.position.y = 1; // Set the Y position to a fixed value to stay grounded
@@ -1000,11 +1165,55 @@ controlToggle.addEventListener("click", () => {
         joystick.appendChild(handle);
 
 
-        let isDragging = false;
+//         let isDragging = false;
+// let initialTouch = null;
+
+// const movementSpeed = 0.1; // Speed of horizontal movement
+// const deadZone = 5; // Minimum distance to register movement
+
+// joystick.addEventListener("touchstart", (e) => {
+//   isDragging = true;
+//   initialTouch = e.touches[0];
+// });
+
+// joystick.addEventListener("touchmove", (e) => {
+//   if (isDragging && initialTouch) {
+//     const rect = joystick.getBoundingClientRect();
+//     const centerX = rect.left + rect.width / 2;
+
+//     // Calculate horizontal movement (X-axis only)
+//     const deltaX = e.touches[0].clientX - centerX;
+
+//     // Dead zone: Ignore minor movements near the center
+//     if (Math.abs(deltaX) > deadZone) {
+//       const normalizedX = Math.min(Math.max(deltaX / (rect.width / 2), -1), 1); // Normalize between -1 and 1
+
+//       // Move player only along the X-axis
+//       player.position.x += normalizedX * movementSpeed;
+
+//       // Update joystick visual position (left-right only)
+//       joystick.style.transform = `translateX(${deltaX}px)`;
+//     }
+//   }
+// });
+
+// joystick.addEventListener("touchend", () => {
+//   isDragging = false;
+//   initialTouch = null;
+
+//   // Reset joystick visual position
+//   joystick.style.transform = "translate(0, 0)";
+// });
+
+// Keep the player grounded (Y and Z axes fixed)
+let isDragging = false;
 let initialTouch = null;
 
-const movementSpeed = 0.05; // Speed of horizontal movement
-const deadZone = 10; // Minimum distance to register movement
+const movementSpeed = 0.1; // Speed of horizontal movement
+const deadZone = 5; // Minimum distance to register movement
+
+// Calculate camera bounds (adjust as needed)
+
 
 joystick.addEventListener("touchstart", (e) => {
   isDragging = true;
@@ -1024,7 +1233,8 @@ joystick.addEventListener("touchmove", (e) => {
       const normalizedX = Math.min(Math.max(deltaX / (rect.width / 2), -1), 1); // Normalize between -1 and 1
 
       // Move player only along the X-axis
-      player.position.x += normalizedX * movementSpeed;
+      const { left, right } = calculateCameraBounds();
+      player.position.x = Math.min(Math.max(player.position.x + normalizedX * movementSpeed, left), right);
 
       // Update joystick visual position (left-right only)
       joystick.style.transform = `translateX(${deltaX}px)`;
@@ -1040,7 +1250,19 @@ joystick.addEventListener("touchend", () => {
   joystick.style.transform = "translate(0, 0)";
 });
 
-// Keep the player grounded (Y and Z axes fixed)
+// Calculate camera bounds (adjust as needed)
+function calculateCameraBounds() {
+  const aspect = window.innerWidth / window.innerHeight;
+  const distance = camera.position.z - player.position.z; // Distance from camera to player
+  const verticalFOV = THREE.MathUtils.degToRad(camera.fov); // Correct method for converting degrees to radians
+  const halfHeight = Math.tan(verticalFOV / 2) * distance;
+  const halfWidth = halfHeight * aspect;
+
+  return {
+    left: -halfWidth,
+    right: halfWidth,
+  };
+}
 
 
       }
@@ -1092,6 +1314,7 @@ joystick.addEventListener("touchend", () => {
     if (mixer) mixer.update(delta);
     if(player){
       updateCamera()
+      updatePlayerPosition();
     }
 
     if (!gameOver) {
@@ -1100,7 +1323,7 @@ joystick.addEventListener("touchend", () => {
       increaseDifficulty();
       updateScore();
       updateGround();
-      updatePlayerPosition();
+     
   }
     checkGameOver(player, obstacles);
     controls.target.set(0, 0, 0);
