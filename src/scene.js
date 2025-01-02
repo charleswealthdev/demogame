@@ -926,7 +926,7 @@ window.addEventListener("deviceorientation", (event) => {
 
       // Style the control toggle button for a glass look
 const controlToggle = document.createElement("button");
-controlToggle.innerText = "Switch to Tilt Control";
+controlToggle.innerText = " Switch Control";
 controlToggle.style.position = "absolute";
 controlToggle.style.top = "10px";
 controlToggle.style.right = "10px";
@@ -967,8 +967,8 @@ controlToggle.onmouseup = () => {
 controlToggle.addEventListener("click", () => {
   isTiltControlEnabled = !isTiltControlEnabled;
   controlToggle.innerText = isTiltControlEnabled
-    ? " Joystick Control"
-    : " Tilt Control";
+    ? " Joystick "
+    : " Tilt ";
 });
 
 
