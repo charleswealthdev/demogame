@@ -195,7 +195,7 @@ scene.add(directionalLight);
   gltfLoader.load('/myavatar.glb', (gltf) => {
     player = gltf.scene;
   
-    player.scale.setScalar(1.4)
+    player.scale.setScalar(1)
     // Bounding box for positioning
     const box = new THREE.Box3().setFromObject(player);
     const size = new THREE.Vector3();
