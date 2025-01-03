@@ -179,8 +179,8 @@ scene.add(directionalLight);
   // Load Model
   gltfLoader.load('/myavatar.glb', (gltf) => {
     player = gltf.scene;
-  
-    player.scale.setScalar(1)
+
+    player.scale.setScalar(0.8)
     // Bounding box for positioning
     const box = new THREE.Box3().setFromObject(player);
     const size = new THREE.Vector3();
@@ -311,7 +311,7 @@ function createObstacles() {
         gltfLoader.load(selectedModel, (gltf) => {
           const model = gltf.scene;
 
-          model.scale.set(1.2, 1.2, 1.2);
+          model.scale.set(1, 1, 1);
 
           // Randomize position
           model.position.set(
@@ -341,7 +341,7 @@ function createObstacles() {
     }
 
     // Randomize obstacle size
-    obstacle.scale.set(0.7, 0.7, 0.7);
+    obstacle.scale.set(0.5, 0.5, 0.5);
 
     // Randomize position
     obstacle.position.set(
@@ -620,79 +620,73 @@ if(event.key ==='ArrowRight')
         // Restart the animation loop
         animate();
       }
-      let isTiltControlEnabled = true;
-      const maxTilt = 30; // Max allowed tilt (adjust for sensitivity)
-const boundaries = { x: 4, y: 1 }; // Set default boundary limits for X-axis and fixed Y-axis position
 
-const movementSpeed = 0.1; // Speed of horizontal movement
+// // Tilt controls
+// window.addEventListener("deviceorientation", (event) => {
+//   if (isTiltControlEnabled && !gameOver) {
+//     const tiltX = event.gamma; // Left/Right tilt (gamma axis)
+//     const clampedTiltX = Math.max(-maxTilt, Math.min(tiltX, maxTilt));
 
+//     // Map the tilt to player movement, scaling by movement speed
+//     const deltaX = (clampedTiltX / maxTilt) * movementSpeed;
+//     const newX = player.position.x + deltaX;
 
-// Tilt controls
-window.addEventListener("deviceorientation", (event) => {
-  if (isTiltControlEnabled && !gameOver) {
-    const tiltX = event.gamma; // Left/Right tilt (gamma axis)
-    const clampedTiltX = Math.max(-maxTilt, Math.min(tiltX, maxTilt));
+//     // Calculate camera boundaries dynamically
+//     const { left, right } = calculateCameraBounds();
+//     player.position.x = Math.min(Math.max(newX, left), right);
 
-    // Map the tilt to player movement, scaling by movement speed
-    const deltaX = (clampedTiltX / maxTilt) * movementSpeed;
-    const newX = player.position.x + deltaX;
+//     // Keep the player grounded (fixed Y position)
+//     player.position.y = boundaries.y;
 
-    // Calculate camera boundaries dynamically
-    const { left, right } = calculateCameraBounds();
-    player.position.x = Math.min(Math.max(newX, left), right);
+//     // Optional: Log for debugging
+//     console.log(`Player position: X=${player.position.x}, Y=${player.position.y}`);
+//   }
+// });
+// const controlToggle = document.createElement("button");
+// controlToggle.innerText = " Switch Control";
+// controlToggle.style.position = "absolute";
+// controlToggle.style.top = "10px";
+// controlToggle.style.right = "10px";
+// controlToggle.style.padding = "12px 20px";
+// controlToggle.style.fontSize = "16px";
+// controlToggle.style.fontWeight = "bold";
+// controlToggle.style.color = "#ffffff"; // White text for contrast
+// controlToggle.style.background = "rgba(255, 255, 255, 0.2)"; // Transparent white
+// controlToggle.style.border = "1px solid rgba(255, 255, 255, 0.3)"; // Subtle border
+// controlToggle.style.borderRadius = "12px";
+// controlToggle.style.backdropFilter = "blur(10px)"; // Glassmorphism blur effect
+// controlToggle.style.webkitBackdropFilter = "blur(10px)"; // For Safari support
+// controlToggle.style.boxShadow = "0px 4px 15px rgba(0, 0, 0, 0.2)"; // Soft shadow
+// controlToggle.style.transition = "all 0.3s ease";
+// controlToggle.style.cursor = "pointer";
+// controlToggle.style.zIndex = "1000";
+// document.body.appendChild(controlToggle);
 
-    // Keep the player grounded (fixed Y position)
-    player.position.y = boundaries.y;
+// // Hover effects
+// controlToggle.onmouseover = () => {
+//   controlToggle.style.background = "rgba(255, 255, 255, 0.3)";
+//   controlToggle.style.boxShadow = "0px 6px 20px rgba(0, 0, 0, 0.3)";
+// };
+// controlToggle.onmouseout = () => {
+//   controlToggle.style.background = "rgba(255, 255, 255, 0.2)";
+//   controlToggle.style.boxShadow = "0px 4px 15px rgba(0, 0, 0, 0.2)";
+// };
 
-    // Optional: Log for debugging
-    console.log(`Player position: X=${player.position.x}, Y=${player.position.y}`);
-  }
-});
-const controlToggle = document.createElement("button");
-controlToggle.innerText = " Switch Control";
-controlToggle.style.position = "absolute";
-controlToggle.style.top = "10px";
-controlToggle.style.right = "10px";
-controlToggle.style.padding = "12px 20px";
-controlToggle.style.fontSize = "16px";
-controlToggle.style.fontWeight = "bold";
-controlToggle.style.color = "#ffffff"; // White text for contrast
-controlToggle.style.background = "rgba(255, 255, 255, 0.2)"; // Transparent white
-controlToggle.style.border = "1px solid rgba(255, 255, 255, 0.3)"; // Subtle border
-controlToggle.style.borderRadius = "12px";
-controlToggle.style.backdropFilter = "blur(10px)"; // Glassmorphism blur effect
-controlToggle.style.webkitBackdropFilter = "blur(10px)"; // For Safari support
-controlToggle.style.boxShadow = "0px 4px 15px rgba(0, 0, 0, 0.2)"; // Soft shadow
-controlToggle.style.transition = "all 0.3s ease";
-controlToggle.style.cursor = "pointer";
-controlToggle.style.zIndex = "1000";
-document.body.appendChild(controlToggle);
+// // Click effect
+// controlToggle.onmousedown = () => {
+//   controlToggle.style.transform = "scale(0.95)";
+// };
+// controlToggle.onmouseup = () => {
+//   controlToggle.style.transform = "scale(1)";
+// };
 
-// Hover effects
-controlToggle.onmouseover = () => {
-  controlToggle.style.background = "rgba(255, 255, 255, 0.3)";
-  controlToggle.style.boxShadow = "0px 6px 20px rgba(0, 0, 0, 0.3)";
-};
-controlToggle.onmouseout = () => {
-  controlToggle.style.background = "rgba(255, 255, 255, 0.2)";
-  controlToggle.style.boxShadow = "0px 4px 15px rgba(0, 0, 0, 0.2)";
-};
-
-// Click effect
-controlToggle.onmousedown = () => {
-  controlToggle.style.transform = "scale(0.95)";
-};
-controlToggle.onmouseup = () => {
-  controlToggle.style.transform = "scale(1)";
-};
-
-// Add event listener for functionality
-controlToggle.addEventListener("click", () => {
-  isTiltControlEnabled = !isTiltControlEnabled;
-  controlToggle.innerText = isTiltControlEnabled
-    ? " Joystick "
-    : " Tilt ";
-});
+// // Add event listener for functionality
+// controlToggle.addEventListener("click", () => {
+//   isTiltControlEnabled = !isTiltControlEnabled;
+//   controlToggle.innerText = isTiltControlEnabled
+//     ? " Joystick "
+//     : " Tilt ";
+// });
 
 
       
@@ -821,9 +815,6 @@ function calculateCameraBounds() {
     checkGameOver(player, obstacles);
     controls.target.set(0, 0, 0);
     controls.update()
-    
-  
-
     renderer.render(scene,camera)
   }
   animate()
