@@ -3,7 +3,6 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
-import { ThreeMFLoader } from 'three/examples/jsm/Addons.js';
 
 
 export function createHeroScene(container){
@@ -31,6 +30,7 @@ loadingManager.onLoad = () => {
     console.log('All assets loaded');
     const preloader = document.getElementById('preloader');
     preloader.style.display = 'none'; // Hide preloader
+    
    
 };
 
@@ -77,19 +77,6 @@ rgbeLoader.load('/shanghai_bund_1k.hdr', (texture) => {
   scene.background = new THREE.Color(0x87ceeb); // Sky blue
 
 });
-
-// rgbeLoader.load('/street_lamp_1k.hdr', (texture) => {
-//   texture.mapping = THREE.EquirectangularReflectionMapping;
-//   scene.environment = texture;
-
-//   renderer.toneMappingExposure = 0.6; // Reduce HDR brightness
-
-//   const light = new THREE.DirectionalLight(0xffffff, 0.4);
-//   light.position.set(5, 10, 5);
-//   scene.add(light);
-// });
-
-
 
 camera.add(listener);
 
@@ -186,9 +173,7 @@ scene.add(directionalLight);
 
 
   let player, mixer, actions = {};
-
-  dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/'); // Set the path to Draco decoder files
- 
+  dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/'); 
   // Attach DracoLoader to GLTFLoader
   gltfLoader.setDRACOLoader(dracoLoader);
   // Load Model
@@ -225,18 +210,6 @@ scene.add(directionalLight);
       actions['armature|mixamo.com|layer0'].play();
     }
   });
-
-
-//   gltfLoader.load('/road__highway.glb', (gltf3) => {
-//     const hillModel = gltf3.scene
-//     // Add the loaded model to the scene
-//     hillModel.position.set(0,0,0)
-//     hillModel.scale.set(10,1,10)
-
-//     scene.add(hillModel)
-// });
-
-
 const textureTest = textureLoader.load('/cloudy-veined-quartz-light-unity/cloudy-veined-quartz-light_preview.jpg')
 const textureNormal = textureLoader.load('/rocky-worn-ground-bl/rocky-worn-ground-normal-ogl.png')
 const textureAO = textureLoader.load('rocky-worn-ground-bl/rocky-worn-ground-ao.png')
@@ -253,19 +226,9 @@ const groundMaterial = new THREE.MeshStandardMaterial({
   side: THREE.DoubleSide,
   envMap: scene.environment,
   metalness: 1.0,
-  //     roughness: 0.0, // Slight displacement for added depth
 });
 
-  const groundGeo = new THREE.PlaneGeometry(50, 50);
-
-
-  
-  // const ground = new THREE.Mesh(groundGeo, groundMaterial);
-  // ground.rotation.x = -Math.PI / 2;
-  // ground.position.y = 0;
-  // ground.receiveShadow = true;
-  // scene.add(ground);
-
+  const groundGeo = new THREE.PlaneGeometry(50, 50)
   const groundTiles = [];
   const groundCount = 2;
   let speed = 0.3; 
@@ -281,7 +244,6 @@ const groundMaterial = new THREE.MeshStandardMaterial({
   }
 
 
-  
   function updateGround() {
     groundTiles.forEach((ground) => {
       ground.position.z += speed;
@@ -290,144 +252,6 @@ const groundMaterial = new THREE.MeshStandardMaterial({
       }
     });
   }
-
-// Start with a slower speed
-
-// const highwayTiles = [];
-//   const highwayCount = 2; // Number of highway tiles
-//   const highwayLength = 20; // Length of each highway tile
-
-// gltfLoader.load('/road_hd.glb', (gltf3) => {
-//   const highwayModel = gltf3.scene;
-
-//   // Array to hold the highway tiles
-  
-//   // Initialize and position highway tiles
-//   for (let i = 0; i < highwayCount; i++) {
-//     const highwayTile = highwayModel.clone(); // Clone the model for each tile
-//     highwayTile.position.set(0, 0, -i * highwayLength); // Position the tiles sequentially
-//     highwayTile.scale.set(10, 1, 10); // Adjust scale if needed
-//     highwayTile.rotation.y = Math.PI;
-//     highwayTile.receiveShadow=true;
-//     highwayTile.castShadow = true;
-
-//     scene.add(highwayTile); // Add to the scene
-//     highwayTiles.push(highwayTile); // Add to the array
-//   }
-
-
-// })
-
-
-// function updateHighway() {
-//   highwayTiles.forEach((tile) => {
-//     tile.position.z += speed; // Move tile forward
-//     if (tile.position.z > highwayLength) {
-//       tile.position.z -= highwayCount * highwayLength; // Wrap around to the back
-//     }
-//   });
-// }
-
-
-// // Array to hold obstacles
-// const obstacles = [];
-
-// // Create obstacles function
-// function createObstacles() {
-//   const textureLoader = new THREE.TextureLoader();
- 
-
-//   // Randomly choose between different obstacle types (geometries or models)
-//   const obstacleType = Math.floor(Math.random() * 4); // Now selecting from 0 to 3
-
-//   textureLoader.load('/cx3.jpg', (texture) => {
-//     let obstacle;
-
-//     // Material for all geometries
-//     const material = new THREE.MeshStandardMaterial({
-//       map: texture,
-//       transparent: true,
-//       roughness: 1,
-//       metalness: 0.5,
-//     });
-
-//     switch (obstacleType) {
-//       case 0: // Cube
-//         obstacle = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
-//         break;
-
-//       case 1: // Sphere
-//         obstacle = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), material);
-//         break;
-
-//       case 2: // Cone
-//         obstacle = new THREE.Mesh(new THREE.ConeGeometry(1, 2, 32), material);
-//         break;
-
-//       case 3: // Custom 3D Model (GLTF)
-//         const models = [
-//           '/green-goblin_bomb.glb',
-//           '/cherri_bomb.glb',
-//           '/bomb.glb',
-//         ];
-//         const selectedModel = models[Math.floor(Math.random() * models.length)];
-
-//         const gltfLoader = new GLTFLoader()
-
-//         gltfLoader.load(selectedModel, (gltf) => {
-//           const model = gltf.scene;
-
-//           // // Randomize obstacle size
-//           // const size = Math.random() * 2 + 1; // Random size between 1 and 3
-//           model.scale.set(1.4,1.4,1.4);
-
-//           // // Randomize position
-//           model.position.set(
-//             Math.random() * 10 - 5, // Random x position
-//            1.4,               // y position based on size
-//             -20                     // Start far back on the z-axis
-//           );
-
-//           // Enable shadows for model
-//           model.traverse((child) => {
-//             if (child.isMesh) {
-//               child.castShadow = true;
-//               child.receiveShadow = true;
-//             }
-//           });
-
-//           // Add to scene and obstacles array
-//           scene.add(model);
-//           obstacles.push(model);
-//         });
-//         return; // Exit the function to avoid adding a non-existent obstacle below
-//     }
-
-//     // Randomize obstacle size
-//     const size = Math.random() * 2 + 1; // Random size between 1 and 3
-//     obstacle.scale.set(0.7,0.7,0.7);
-
-//     // Randomize position
-//     obstacle.position.set(
-//       Math.random() * 10 - 5, // Random x position
-//       1,               // y position based on size
-//       -20                     // Start far back on the z-axis
-//     );
-
-//     // Enable shadows for obstacle
-//     obstacle.castShadow = true;
-//     obstacle.receiveShadow = true;
-
-//     // Add the obstacle to the scene
-//     scene.add(obstacle);
-
-//     // Store the obstacle for future updates
-//     obstacles.push(obstacle);
-//   });
-// }
-
-// // Call `createObstacles` periodically, e.g., every 6 seconds
-// setInterval(createObstacles, 10000);
 
 
 // Array to hold obstacles
@@ -492,10 +316,10 @@ function createObstacles() {
           // Randomize position
           model.position.set(
             Math.random() * 10 - 5, // Random x position
-            1.4, // y position based on size
+            1.4,
             obstacles.length > 0
               ? obstacles[obstacles.length - 1].position.z - minZDistance
-              : -20 // Start far back on the z-axis
+              : -20
           );
 
           // Enable shadows for model
@@ -560,39 +384,14 @@ function manageObstacleCount() {
 // Call `createObstacles` periodically, e.g., every 8 seconds
 setInterval(createObstacles, 8000); // Create obstacles every 8 seconds
 
-
-//   function updateObstacles(){
-// obstacles.forEach((obstacle)=> {
-//     checkBonusPoints(player, obstacle);
- 
-//   obstacle.position.z += speed;
-//   if(obstacle.position.z>10){
-// obstacle.position.z = -20;
-// obstacle.position.x= Math.random( ) * 10 - 5;
-//   }
-// })
-
-//   }
-
-//   setInterval(createObstacles,2000)
-
-
 function updateObstacles() {
   obstacles.forEach((obstacle) => {
-    // Check for bonus points if the player avoids the obstacle
-
-    // Move obstacle forward
     obstacle.position.z += speed;
-
-    // Reset obstacle if it moves past the player
     if (obstacle.position.z > 6) {
       resetObstacle(obstacle);
     }
   });
 }
-
-// Helper function to reset obstacle
-
   function resetObstacle(obstacle) {
     obstacle.position.z = -20; // Reset to starting position
     obstacle.position.x = Math.random() * 20 - 5; // Increase range for more space
@@ -609,64 +408,8 @@ setInterval(() => {
   scene.add(camera)
   
   
-  
-  // function updateCamera() {
-  //     if (player) {
-  //       camera.position.z = player.position.z + 5;
-  //       camera.position.x = player.position.x;
-  //       camera.position.y = 3; // Maintain consistent height
-  //       camera.lookAt(player.position);
-  //     }
-  // }
-
-//   function updateCamera() {
-//     if (player) {
-//         camera.position.lerp(
-//             new THREE.Vector3(player.position.x, 3, player.position.z + 5),
-//             0.1 // Smooth factor
-//         );
-//         camera.lookAt(player.position.x, player.position.y, player.position.z);
-//     }
-// }// Set the camera position in a fixed, standard position
-// Define offsets for camera positions
 const backOffset = new THREE.Vector3(0, 2, -5); // Back view
 const frontOffset = new THREE.Vector3(0, 2, 5); // Front view
-
-// // Define initial camera position
-// const cameraPosition = new THREE.Vector3(0, 5, 15); // Adjust these values for initial placement
-// camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-// camera.lookAt(0, 1, 0); // Look at player or a central point
-
-// // Ensure player is defined before using its position
-// if (!player || !player.position) {
-//   console.error("Player object or its position is not defined.");
-// } else {
-//   // Set initial camera position to front view relative to player
-//   camera.position.copy(player.position.clone().add(frontOffset));
-
-//   // Animate camera offset to back view after 3 seconds
-//   setTimeout(() => {
-//     gsap.fromTo(
-//       camera.position,
-//       {
-//         x: camera.position.x,
-//         y: camera.position.y,
-//         z: camera.position.z,
-//       },
-//       {
-//         x: player.position.x + backOffset.x,
-//         y: player.position.y + backOffset.y,
-//         z: player.position.z + backOffset.z,
-//         duration: 1.5, // Smooth transition duration
-//         ease: "power1.out",
-//         onUpdate: () => {
-//           // Ensure the camera looks at the player during animation
-//           camera.lookAt(player.position);
-//         },
-//       }
-//     );
-//   }, 5000); // Start animation after 3 seconds
-// }
 
 
 // Ensure the camera updates each frame
@@ -689,185 +432,6 @@ function updateCamera() {
   controls.maxDistance = 25;  // Limit zoom distance
  controls.minDistance = 5;   // Avoid zooming too close
 
-
-// // Mobile swipe-to-move variables
-// let startX = 0;
-// let startY = 0;
-// let isTouching = false;
-
-// // Device orientation variables (tilt)
-// let tiltX = 0;
-// let tiltY = 0;
-
-// // Touch start event for swipe detection
-// renderer.domElement.addEventListener('touchstart', (event) => {
-//   if (event.touches.length === 1) {
-//     // Start touch, save initial positions
-//     startX = event.touches[0].pageX;
-//     startY = event.touches[0].pageY;
-//     isTouching = true;
-//   }
-// }, false);
-
-// // Touch move event for swipe detection
-// renderer.domElement.addEventListener('touchmove', (event) => {
-//   if (!isTouching) return;
-
-//   // Get touch movement
-//   const diffX = event.touches[0].pageX - startX;
-//   const diffY = event.touches[0].pageY - startY;
-
-//   // Update camera position or object based on swipe (example moves camera)
-//   camera.position.x -= diffX * 0.05; // Adjust speed factor as needed
-//   camera.position.y += diffY * 0.05;
-
-//   // Update start positions to calculate new movement
-//   startX = event.touches[0].pageX;
-//   startY = event.touches[0].pageY;
-// }, false);
-
-// // Touch end event to stop touch tracking
-// renderer.domElement.addEventListener('touchend', () => {
-//   isTouching = false;
-// }, false);
-
-// // Device orientation event to detect tilt (using device's gyroscope)
-// window.addEventListener('deviceorientation', (event) => {
-//   tiltX = event.gamma; // Left-to-right tilt in degrees
-//   tiltY = event.beta;  // Forward-and-backward tilt in degrees
-
-//   // Apply tilt to camera (for example)
-//   camera.position.x += tiltX * 0.1; // Adjust sensitivity as needed
-//   camera.position.y -= tiltY * 0.1; // Adjust sensitivity as needed
-// }, false);
-
-// let touchStartX = 0;
-// let touchStartY = 0;
-// let isTouching = false;
-
-// window.addEventListener('touchstart', (e) => {
-//   touchStartX = e.touches[0].clientX;
-//   touchStartY = e.touches[0].clientY;
-//   isTouching = true;
-// });
-
-// window.addEventListener('touchmove', (e) => {
-//   if (isTouching) {
-//     let touchMoveX = e.touches[0].clientX;
-//     let touchMoveY = e.touches[0].clientY;
-
-//     // Calculate movement delta
-//     const deltaX = touchMoveX - touchStartX;
-//     const deltaY = touchMoveY - touchStartY;
-
-//     // Update player position or other actions
-//     player.position.x += deltaX * 0.01; // Adjust movement speed
-//     player.position.y += deltaY * 0.01;
-
-//     touchStartX = touchMoveX;
-//     touchStartY = touchMoveY;
-//   }
-// });
-
-// window.addEventListener('touchend', () => {
-//   isTouching = false;
-// });// Create joystick and handle elements
-// let joystick = document.createElement('div');
-// joystick.style.position = 'absolute';
-// joystick.style.bottom = '20px';
-// joystick.style.left = '20px';
-// joystick.style.borderRadius = '50%';
-// joystick.style.background = 'rgba(0, 0, 0, 0.5)';
-// joystick.style.touchAction = 'none'; // Prevents the default touch behavior (scrolling/pinch)
-
-// // Append the joystick to the body
-// document.body.appendChild(joystick);
-
-// // Handle element inside the joystick
-// let handle = document.createElement('div');
-// handle.style.position = 'absolute';
-// handle.style.borderRadius = '50%';
-// handle.style.background = 'rgba(255, 255, 255, 0.8)';
-// joystick.appendChild(handle);
-
-// let isDragging = false;
-// let startTouch = { x: 0, y: 0 };
-
-// // Dynamically set joystick size based on screen width
-// const setJoystickSize = () => {
-//   const screenWidth = window.innerWidth;
-
-//   // Set the joystick size to be 20% of the screen width, but with a minimum size of 100px and a maximum of 200px
-//   const joystickSize = Math.min(Math.max(screenWidth * 0.2, 100), 200);
-//   joystick.style.width = `${joystickSize}px`;
-//   joystick.style.height = `${joystickSize}px`;
-
-//   // Set the handle size to 50% of the joystick size
-//   const handleSize = joystickSize / 2;
-//   handle.style.width = `${handleSize}px`;
-//   handle.style.height = `${handleSize}px`;
-
-//   // Center the handle in the joystick
-//   handle.style.left = `${(joystickSize - handleSize) / 2}px`;
-//   handle.style.top = `${(joystickSize - handleSize) / 2}px`;
-// };
-
-// // Call the function initially to set the size
-// setJoystickSize();
-
-
-// Adjust joystick size on window resize
-// window.addEventListener('resize', setJoystickSize);
-
-// Joystick interaction logic
-// joystick.addEventListener('touchstart', (e) => {
-//   isDragging = true;
-//   startTouch.x = e.touches[0].clientX;
-//   startTouch.y = e.touches[0].clientY;
-// });
-
-// joystick.addEventListener('touchmove', (e) => {
-//   if (isDragging) {
-//     const rect = joystick.getBoundingClientRect();
-//     const centerX = rect.left + rect.width / 2;
-//     const centerY = rect.top + rect.height / 2;
-
-//     // Calculate movement deltas
-//     const deltaX = e.touches[0].clientX - centerX;
-//     const deltaY = e.touches[0].clientY - centerY;
-
-//     // Limit the joystick handle's movement within the joystick boundary
-//     const distance = Math.min(Math.sqrt(deltaX * deltaX + deltaY * deltaY), rect.width / 2);
-//     const angle = Math.atan2(deltaY, deltaX);
-
-//     // Move the handle within the boundary
-//     handle.style.left = `${centerX + Math.cos(angle) * distance - handle.offsetWidth / 2}px`;
-//     handle.style.top = `${centerY + Math.sin(angle) * distance - handle.offsetHeight / 2}px`;
-
-//     // Control the player based on the handle's position
-//     const moveFactor = distance / (rect.width / 2);
-//     player.position.x += Math.cos(angle) * moveFactor * 0.1;
-//     player.position.z += Math.sin(angle) * moveFactor * 0.1;
-//   }
-// });
-
-// joystick.addEventListener('touchend', () => {
-//   isDragging = false;
-
-//   // Reset the handle position to the center after touch ends
-//   handle.style.left = `${(joystick.offsetWidth - handle.offsetWidth) / 2}px`;
-//   handle.style.top = `${(joystick.offsetHeight - handle.offsetHeight) / 2}px`;
-// });
-
-// // Optional: Add touch cancel event to handle edge cases when touch is lost
-// joystick.addEventListener('touchcancel', () => {
-//   isDragging = false;
-//   handle.style.left = `${(joystick.offsetWidth - handle.offsetWidth) / 2}px`;
-//   handle.style.top = `${(joystick.offsetHeight - handle.offsetHeight) / 2}px`;
-// });
-
-
-
   let moveLeft = false
   let moveRight = false
 
@@ -877,10 +441,7 @@ if(event.key ==='ArrowLeft')
   moveLeft=true;
 if(event.key ==='ArrowRight')
   moveRight=true;
-
   });
-
-
   
   window.addEventListener('keyup', (event) =>{
     if(event.key ==='ArrowLeft')
@@ -889,8 +450,6 @@ if(event.key ==='ArrowRight')
     
     if(event.key ==='ArrowRight')
       moveRight=false;
-   
-    
       })
 
 
@@ -926,9 +485,6 @@ if(event.key ==='ArrowRight')
         }
       }
       setInterval(increaseDifficulty, 100000);
-      
-      
-    
       
       // Update player movement
       function updatePlayer() {
@@ -1065,25 +621,25 @@ if(event.key ==='ArrowRight')
         animate();
       }
       let isTiltControlEnabled = true;
-let movementSpeed = 0.1; // Horizontal movement speed (adjustable)
-let maxTilt = 30; // Max allowed tilt (adjust for sensitivity)
+      const maxTilt = 30; // Max allowed tilt (adjust for sensitivity)
+const boundaries = { x: 4, y: 1 }; // Set default boundary limits for X-axis and fixed Y-axis position
 
-// Enable tilt control (listen to device orientation)
-const boundaries = { x: 4, y: 1 }; // Set boundary limits for x-axis and fixed y-axis position
+const movementSpeed = 0.1; // Speed of horizontal movement
 
+
+// Tilt controls
 window.addEventListener("deviceorientation", (event) => {
   if (isTiltControlEnabled && !gameOver) {
     const tiltX = event.gamma; // Left/Right tilt (gamma axis)
-
-    // Clamp the tilt to the range [-maxTilt, maxTilt] to avoid too fast movement
     const clampedTiltX = Math.max(-maxTilt, Math.min(tiltX, maxTilt));
 
     // Map the tilt to player movement, scaling by movement speed
     const deltaX = (clampedTiltX / maxTilt) * movementSpeed;
     const newX = player.position.x + deltaX;
 
-    // Enforce boundaries for X-axis movement
-    player.position.x = Math.max(-boundaries.x, Math.min(newX, boundaries.x));
+    // Calculate camera boundaries dynamically
+    const { left, right } = calculateCameraBounds();
+    player.position.x = Math.min(Math.max(newX, left), right);
 
     // Keep the player grounded (fixed Y position)
     player.position.y = boundaries.y;
@@ -1092,10 +648,6 @@ window.addEventListener("deviceorientation", (event) => {
     console.log(`Player position: X=${player.position.x}, Y=${player.position.y}`);
   }
 });
-
-      // Toggle Control UI
-
-      // Style the control toggle button for a glass look
 const controlToggle = document.createElement("button");
 controlToggle.innerText = " Switch Control";
 controlToggle.style.position = "absolute";
@@ -1170,52 +722,10 @@ controlToggle.addEventListener("click", () => {
         });
         joystick.appendChild(handle);
 
-
-//         let isDragging = false;
-// let initialTouch = null;
-
-// const movementSpeed = 0.1; // Speed of horizontal movement
-// const deadZone = 5; // Minimum distance to register movement
-
-// joystick.addEventListener("touchstart", (e) => {
-//   isDragging = true;
-//   initialTouch = e.touches[0];
-// });
-
-// joystick.addEventListener("touchmove", (e) => {
-//   if (isDragging && initialTouch) {
-//     const rect = joystick.getBoundingClientRect();
-//     const centerX = rect.left + rect.width / 2;
-
-//     // Calculate horizontal movement (X-axis only)
-//     const deltaX = e.touches[0].clientX - centerX;
-
-//     // Dead zone: Ignore minor movements near the center
-//     if (Math.abs(deltaX) > deadZone) {
-//       const normalizedX = Math.min(Math.max(deltaX / (rect.width / 2), -1), 1); // Normalize between -1 and 1
-
-//       // Move player only along the X-axis
-//       player.position.x += normalizedX * movementSpeed;
-
-//       // Update joystick visual position (left-right only)
-//       joystick.style.transform = `translateX(${deltaX}px)`;
-//     }
-//   }
-// });
-
-// joystick.addEventListener("touchend", () => {
-//   isDragging = false;
-//   initialTouch = null;
-
-//   // Reset joystick visual position
-//   joystick.style.transform = "translate(0, 0)";
-// });
-
-// Keep the player grounded (Y and Z axes fixed)
 let isDragging = false;
 let initialTouch = null;
 
-const movementSpeed = 0.1; // Speed of horizontal movement
+const movementSpeed = 0.2; // Speed of horizontal movement
 const deadZone = 5; // Minimum distance to register movement
 
 // Calculate camera bounds (adjust as needed)
@@ -1280,30 +790,7 @@ function calculateCameraBounds() {
   
       setupJoystick();
       
-
-
-      
-
-      
-  // Create the restart button
-
-      // function checkCollision(){
-      //   obstacles.forEach((obstacle)=>{
-      //     const playerBox = new THREE.Box3().setFromObject(player);
-          
-
-      //   const obstacleBox =  new THREE.Box3().setFromObject(obstacle);
-
-      //   if(playerBox.intersectsBox(obstacleBox)){
-      //     alert(`Game Over! Your score: ${score}`);
-      //     localStorage.setItem('highScore', Math.max(score, localStorage.getItem('highScore') || 0));
-      //     resetGame();
-      //   }
-      //   })
-      // }
-
-    
-
+  
   window.addEventListener('resize', () => {
     renderer.setSize(container.clientWidth, container.clientHeight);
     camera.aspect = container.clientWidth / container.clientHeight;
