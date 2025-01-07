@@ -65,11 +65,6 @@ const listener = new THREE.AudioListener();
 const sound = new THREE.Audio(listener);
 const audioLoader = new THREE.AudioLoader(loadingManager);
 
-// scene.background = new THREE.Color(0x87ceeb); // Sky blue
-
-
-
-
 const rgbeLoader = new RGBELoader();
 rgbeLoader.load('/shanghai_bund_1k.hdr', (texture) => {
   texture.mapping = THREE.EquirectangularReflectionMapping;
@@ -413,16 +408,36 @@ const frontOffset = new THREE.Vector3(0, 2, 5); // Front view
 
 
 // Ensure the camera updates each frame
-function updateCamera() {
-  if (!gameOver) {
-      // Ensure the camera is always following the player with the standard offset
-      camera.position.x = player.position.x + frontOffset.x; // Track player on X-axis with offset
-      camera.position.y = player.position.y + frontOffset.y; // Fixed height above player
-      camera.position.z = player.position.z + frontOffset.z; // Track player on Z-axis with offset
+// function updateCamera() {
+//   if (!gameOver) {
+//       // Ensure the camera is always following the player with the standard offset
+//       camera.position.x = player.position.x + frontOffset.x; // Track player on X-axis with offset
+//       camera.position.y = player.position.y + frontOffset.y; // Fixed height above player
+//       camera.position.z = player.position.z + frontOffset.z; // Track player on Z-axis with offset
 
-      // Ensure the camera is looking at the player from behind
-      camera.lookAt(player.position.x, player.position.y, player.position.z);
-  }
+//       // Ensure the camera is looking at the player from behind
+//       camera.lookAt(player.position.x, player.position.y, player.position.z);
+//   }
+// }
+
+const cameraOffset = new THREE.Vector3(0, 4, 7); // Adjust based on game design
+const lookAheadDistance = 10; // Distance ahead of the player to focus on
+
+// Function to update the camera's position and orientation
+function updateCamera() {
+    // Calculate the target camera position based on the player's position
+    const targetCameraPosition = player.position.clone().add(cameraOffset);
+
+    // Smoothly transition the camera to the target position
+    camera.position.lerp(targetCameraPosition, 0.3); // Adjust smoothing factor (0.1) as needed
+
+    // Calculate the look-at position (slightly ahead of the player)
+    const lookAtPosition = player.position.clone();
+    lookAtPosition.z += lookAheadDistance; // Adjust for forward direction
+
+    // Make the camera look at the target position
+    camera.lookAt(lookAtPosition);
+
 }
 
 
@@ -514,7 +529,6 @@ if(event.key ==='ArrowRight')
         });
       }
       
-
       function triggerGameOver() {
         gameOver = true;
       
@@ -549,6 +563,7 @@ if(event.key ==='ArrowRight')
       
         // Create game over overlay
         const gameOverOverlay = document.createElement("div");
+        gameOverOverlay.id = "gameOverOverlay"; // Add a unique ID
         Object.assign(gameOverOverlay.style, {
           position: "fixed",
           top: "0",
@@ -562,6 +577,7 @@ if(event.key ==='ArrowRight')
           justifyContent: "center",
           alignItems: "center",
           fontSize: "2rem",
+          zIndex: "1000",
         });
         gameOverOverlay.innerHTML = `
           <p>Game Over!</p>
@@ -584,11 +600,19 @@ if(event.key ==='ArrowRight')
           }
         };
         window.addEventListener("keydown", keyListener);
+      
+        // Remove the event listener when the game restarts to avoid stacking
+        restartGame.cleanupKeyListener = () => {
+          window.removeEventListener("keydown", keyListener);
+        };
       }
       
-
-      
       function restartGame() {
+        // Clean up the key listener
+        if (restartGame.cleanupKeyListener) {
+          restartGame.cleanupKeyListener();
+        }
+      
         gameOver = false;
         score = 0;
         player.position.set(0, 1, 0);
@@ -603,16 +627,18 @@ if(event.key ==='ArrowRight')
         });
       
         // Remove the game over overlay
-        const gameOverOverlay = document.querySelector("div");
+        const gameOverOverlay = document.getElementById("gameOverOverlay");
         if (gameOverOverlay) {
           document.body.removeChild(gameOverOverlay);
         }
       
-
-        setupJoystick()
+        // Reset joystick setup if applicable
+        setupJoystick();
+      
         // Reset score display
         scoreElement.innerHTML = `Score: ${score}`;
       
+        // Ensure no previous animation loops are running
         if (animationFrameId) {
           cancelAnimationFrame(animationFrameId);
         }
@@ -620,75 +646,7 @@ if(event.key ==='ArrowRight')
         // Restart the animation loop
         animate();
       }
-
-// // Tilt controls
-// window.addEventListener("deviceorientation", (event) => {
-//   if (isTiltControlEnabled && !gameOver) {
-//     const tiltX = event.gamma; // Left/Right tilt (gamma axis)
-//     const clampedTiltX = Math.max(-maxTilt, Math.min(tiltX, maxTilt));
-
-//     // Map the tilt to player movement, scaling by movement speed
-//     const deltaX = (clampedTiltX / maxTilt) * movementSpeed;
-//     const newX = player.position.x + deltaX;
-
-//     // Calculate camera boundaries dynamically
-//     const { left, right } = calculateCameraBounds();
-//     player.position.x = Math.min(Math.max(newX, left), right);
-
-//     // Keep the player grounded (fixed Y position)
-//     player.position.y = boundaries.y;
-
-//     // Optional: Log for debugging
-//     console.log(`Player position: X=${player.position.x}, Y=${player.position.y}`);
-//   }
-// });
-// const controlToggle = document.createElement("button");
-// controlToggle.innerText = " Switch Control";
-// controlToggle.style.position = "absolute";
-// controlToggle.style.top = "10px";
-// controlToggle.style.right = "10px";
-// controlToggle.style.padding = "12px 20px";
-// controlToggle.style.fontSize = "16px";
-// controlToggle.style.fontWeight = "bold";
-// controlToggle.style.color = "#ffffff"; // White text for contrast
-// controlToggle.style.background = "rgba(255, 255, 255, 0.2)"; // Transparent white
-// controlToggle.style.border = "1px solid rgba(255, 255, 255, 0.3)"; // Subtle border
-// controlToggle.style.borderRadius = "12px";
-// controlToggle.style.backdropFilter = "blur(10px)"; // Glassmorphism blur effect
-// controlToggle.style.webkitBackdropFilter = "blur(10px)"; // For Safari support
-// controlToggle.style.boxShadow = "0px 4px 15px rgba(0, 0, 0, 0.2)"; // Soft shadow
-// controlToggle.style.transition = "all 0.3s ease";
-// controlToggle.style.cursor = "pointer";
-// controlToggle.style.zIndex = "1000";
-// document.body.appendChild(controlToggle);
-
-// // Hover effects
-// controlToggle.onmouseover = () => {
-//   controlToggle.style.background = "rgba(255, 255, 255, 0.3)";
-//   controlToggle.style.boxShadow = "0px 6px 20px rgba(0, 0, 0, 0.3)";
-// };
-// controlToggle.onmouseout = () => {
-//   controlToggle.style.background = "rgba(255, 255, 255, 0.2)";
-//   controlToggle.style.boxShadow = "0px 4px 15px rgba(0, 0, 0, 0.2)";
-// };
-
-// // Click effect
-// controlToggle.onmousedown = () => {
-//   controlToggle.style.transform = "scale(0.95)";
-// };
-// controlToggle.onmouseup = () => {
-//   controlToggle.style.transform = "scale(1)";
-// };
-
-// // Add event listener for functionality
-// controlToggle.addEventListener("click", () => {
-//   isTiltControlEnabled = !isTiltControlEnabled;
-//   controlToggle.innerText = isTiltControlEnabled
-//     ? " Joystick "
-//     : " Tilt ";
-// });
-
-
+      
       
       // Joystick Setup
       function setupJoystick() {
@@ -772,10 +730,7 @@ function calculateCameraBounds() {
     left: -halfWidth,
     right: halfWidth,
   };
-}
-
-
-      }
+}     }
 
       function updatePlayerPosition() {
         player.position.y = 1; // Ground level (adjust based on your scene)
