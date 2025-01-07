@@ -205,48 +205,298 @@ scene.add(directionalLight);
       actions['armature|mixamo.com|layer0'].play();
     }
   });
+
+
+  function createBuilding(width, height, depth, color) {
+    const geometry = new THREE.BoxGeometry(width, height, depth);
+    const material = new THREE.MeshLambertMaterial({ color });
+    const building = new THREE.Mesh(geometry, material);
+    building.castShadow = true; // Enable shadow casting for realism
+    building.receiveShadow = true;
+    return building;
+  }
+  
+  // Function to create a tree
+  function createTree() {
+    const trunkGeometry = new THREE.CylinderGeometry(0.5, 0.5, 3, 16);
+    const trunkMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 }); // Brown color for trunk
+    const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+    
+    const foliageGeometry = new THREE.SphereGeometry(2, 16, 16);
+    const foliageMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 }); // Green color for foliage
+    const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+    
+    foliage.position.y = 2.5; // Position foliage above the trunk
+    
+    const tree = new THREE.Group();
+    tree.add(trunk);
+    tree.add(foliage);
+    tree.castShadow = true;
+    tree.receiveShadow = true;
+    return tree;
+  }
+  function addBuildings(scene, groundTiles) {
+    const buildingSpacing = 15; // Distance between buildings
+    groundTiles.forEach((ground, index) => {
+      const zPosition = -index * 50; // Align with ground tile z-position
+      for (let i = zPosition; i < zPosition + 50; i += buildingSpacing) {
+        const building1 = createBuilding(5, 10, 5, 0x808080); // Gray building
+        building1.position.set(-10, 5, i); // Position on the left side of the road
+        scene.add(building1);
+  
+        const building2 = createBuilding(6, 12, 6, 0xA9A9A9); // Dark gray building
+        building2.position.set(10, 6, i); // Position on the right side of the road
+        scene.add(building2);
+      }
+    });
+  }
+  
+
+  // const roadLength = 200;
+
+
 const textureTest = textureLoader.load('/cloudy-veined-quartz-light-unity/cloudy-veined-quartz-light_preview.jpg')
 const textureNormal = textureLoader.load('/rocky-worn-ground-bl/rocky-worn-ground-normal-ogl.png')
 const textureAO = textureLoader.load('rocky-worn-ground-bl/rocky-worn-ground-ao.png')
 const textureM = textureLoader.load('rocky-worn-ground-bl/rocky-worn-ground1.png')
 const textureR = textureLoader.load('rocky-worn-ground-bl/rocky-worn-ground_Roughness.png')
-  
-//   // create and add ground to the scene
 
+
+
+  
+// Constants
+const groundWidth = 50;
+const groundLength = 50;
+const groundCount = 3; // Number of ground tiles
+const tileSpacing = groundLength;
+let speed = 0.5; // Speed of the environment
+
+// Ground material
 const groundMaterial = new THREE.MeshStandardMaterial({
   map: textureTest,
   normalMap: textureNormal,
   roughnessMap: textureR,
   aoMap: textureM,
   side: THREE.DoubleSide,
-  envMap: scene.environment,
   metalness: 1.0,
 });
 
-  const groundGeo = new THREE.PlaneGeometry(50, 50)
-  const groundTiles = [];
-  const groundCount = 2;
-  let speed = 0.3; 
-  
-  for (let i = 0; i < groundCount; i++) {
-    const ground = new THREE.Mesh(groundGeo, groundMaterial);
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.z = -i * 50; // Adjust for seamless tiling
-    ground.receiveShadow = true;
-    ground.castShadow=true
-    scene.add(ground);
-    groundTiles.push(ground);
+// // Function to create trees
+// function createTree() {
+//   const trunkGeo = new THREE.CylinderGeometry(0.2, 0.5, 2, 8);
+//   const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+//   const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+
+//   const leavesGeo = new THREE.ConeGeometry(1, 3, 8);
+//   const leavesMat = new THREE.MeshStandardMaterial({ color: 0x228b22 });
+//   const leaves = new THREE.Mesh(leavesGeo, leavesMat);
+//   leaves.position.y = 2.5;
+
+//   const tree = new THREE.Group();
+//   tree.add(trunk, leaves);
+//   return tree;
+// }
+
+// // Function to create buildings
+// function createBuilding(width, height, depth, color) {
+//   const buildingGeo = new THREE.BoxGeometry(width, height, depth);
+//   const buildingMat = new THREE.MeshStandardMaterial({ color });
+//   const building = new THREE.Mesh(buildingGeo, buildingMat);
+//   building.castShadow = true;
+//   building.receiveShadow = true;
+//   return building;
+// }
+
+// // Create a single tile group (ground + trees + buildings)
+// function createTile(zOffset) {
+//   const tileGroup = new THREE.Group();
+
+//   // Ground
+//   const groundGeo = new THREE.PlaneGeometry(groundWidth, groundLength);
+//   const ground = new THREE.Mesh(groundGeo, groundMaterial);
+//   ground.rotation.x = -Math.PI / 2;
+//   ground.position.y = 0; // On the ground level
+//   ground.receiveShadow = true;
+//   tileGroup.add(ground);
+
+//   // Trees
+//   for (let z = -groundLength / 2; z < groundLength / 2; z += 10) {
+//     const treeLeft = createTree();
+//     treeLeft.position.set(-20, 0, z);
+//     tileGroup.add(treeLeft);
+
+//     const treeRight = createTree();
+//     treeRight.position.set(20, 0, z);
+//     tileGroup.add(treeRight);
+//   }
+
+//   // Buildings
+//   for (let z = -groundLength / 2; z < groundLength / 2; z += 15) {
+//     const buildingLeft = createBuilding(5, 12, 5, 0x555555);
+//     buildingLeft.position.set(-30, 6, z);
+//     tileGroup.add(buildingLeft);
+
+//     const buildingRight = createBuilding(5, 15, 5, 0x777777);
+//     buildingRight.position.set(30, 7.5, z);
+//     tileGroup.add(buildingRight);
+//   }
+
+//   // Position the entire tile group
+//   tileGroup.position.z = zOffset;
+//   return tileGroup;
+// }
+
+// // Create tile groups
+// const tileGroups = [];
+// for (let i = 0; i < groundCount; i++) {
+//   const zOffset = -i * tileSpacing;
+//   const tile = createTile(zOffset);
+//   scene.add(tile);
+//   tileGroups.push(tile);
+// }
+
+// // Update tiles for infinite scrolling
+// function updateGround() {
+//   tileGroups.forEach((tile) => {
+//     tile.position.z += speed;
+
+//     // If the tile moves out of view, reposition it to the back
+//     if (tile.position.z > tileSpacing) {
+//       tile.position.z -= groundCount * tileSpacing;
+//     }
+//   });
+// }
+
+// Global variables for models
+let treeModel; // Store the loaded tree model
+let buildingModel; // Store the loaded building model
+
+// Function to load a GLTF model
+function loadModel(path, callback) {
+
+  gltfLoader.load(
+    path,
+    (gltf) => {
+      const model = gltf.scene;
+      callback(model);
+    },
+    undefined,
+    (error) => {
+      console.error(`An error occurred while loading the model from ${path}:`, error);
+    }
+  );
+}
+
+// Function to load assets (tree and building models)
+function loadAssets(callback) {
+  let assetsLoaded = 0;
+
+  const checkAssetsLoaded = () => {
+    assetsLoaded++;
+    if (assetsLoaded === 2) {
+      callback(); // Proceed once both models are loaded
+    }
+  };
+
+  loadModel('low_poly_trees_free.glb', (model) => {
+    treeModel = model;
+    checkAssetsLoaded();
+  });
+
+  loadModel('low_poly_public_buildings_pack.glb', (model) => {
+    buildingModel = model;
+    checkAssetsLoaded();
+  });
+}
+
+// Function to create a tree from the loaded model
+function createTree() {
+  if (!treeModel) {
+    console.error('Tree model is not loaded yet.');
+    return new THREE.Group(); // Return an empty placeholder
+  }
+  const treeInstance = treeModel.clone();
+  treeInstance.scale.set(2.5, 2.5,2.5); // Adjust scale as needed
+  return treeInstance;
+}
+
+// Function to create a building from the loaded model
+function createBuilding() {
+  if (!buildingModel) {
+    console.error('Building model is not loaded yet.');
+    return new THREE.Group(); // Return an empty placeholder
+  }
+  const buildingInstance = buildingModel.clone();
+  buildingInstance.scale.set(0.5, 0.5, 0.5); // Adjust scale as needed
+  return buildingInstance;
+}
+
+// Create a single tile group (ground + trees + buildings)
+function createTile(zOffset) {
+  const tileGroup = new THREE.Group();
+
+  // Ground
+  const groundGeo = new THREE.PlaneGeometry(groundWidth, groundLength);
+  const ground = new THREE.Mesh(groundGeo, groundMaterial);
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = 0; // On the ground level
+  ground.receiveShadow = true;
+  tileGroup.add(ground);
+
+  // Trees
+  for (let z = -groundLength / 2; z < groundLength / 2; z += 10) {
+    const treeLeft = createTree();
+    treeLeft.position.set(-20, 0, z);
+    tileGroup.add(treeLeft);
+
+    const treeRight = createTree();
+    treeRight.position.set(20, 0, z);
+    tileGroup.add(treeRight);
   }
 
+  // Buildings
+  for (let z = -groundLength / 2; z < groundLength / 2; z += 15) {
+    const buildingLeft = createBuilding();
+    buildingLeft.position.set(-30, 0, z); // Adjust y-position as needed
+    tileGroup.add(buildingLeft);
 
-  function updateGround() {
-    groundTiles.forEach((ground) => {
-      ground.position.z += speed;
-      if (ground.position.z > 50) {
-        ground.position.z -= groundCount * 50;
-      }
-    });
+    const buildingRight = createBuilding();
+    buildingRight.position.set(30, 0, z); // Adjust y-position as needed
+    tileGroup.add(buildingRight);
   }
+
+  // Position the entire tile group
+  tileGroup.position.z = zOffset;
+  return tileGroup;
+}
+
+const tileGroups = [];
+// Initialize the scene with tiles
+function initializeScene() {
+  loadAssets(() => {
+    for (let i = 0; i < groundCount; i++) {
+      const zOffset = -i * tileSpacing;
+      const tile = createTile(zOffset);
+      scene.add(tile);
+      tileGroups.push(tile);
+    }
+  });
+}
+
+// Update tiles for infinite scrolling
+function updateGround(tileGroups) {
+  tileGroups.forEach((tile) => {
+    tile.position.z += speed;
+
+    // If the tile moves out of view, reposition it to the back
+    if (tile.position.z > tileSpacing) {
+      tile.position.z -= groundCount * tileSpacing;
+    }
+  });
+}
+
+// Call initialization function
+initializeScene();
 
 
 // Array to hold obstacles
@@ -764,7 +1014,7 @@ function calculateCameraBounds() {
       updateObstacles();
       increaseDifficulty();
       updateScore();
-      updateGround();
+      updateGround(tileGroups);
      
   }
     checkGameOver(player, obstacles);
