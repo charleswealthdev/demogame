@@ -582,7 +582,7 @@ if(event.key ==='ArrowRight')
         gameOverOverlay.innerHTML = `
           <p>Game Over!</p>
           <p>Your Final Score: ${score}</p>
-          <p>Press "R" to Restart or Double Tap the Button Below</p>
+          <p>Press "R" to Restart or Tap the Button Below</p>
         `;
         gameOverOverlay.appendChild(button);
       
