@@ -1,26 +1,28 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/cx3.jpg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="./src/style.css">
-    <title>CX3</title>
-  </head>
-  <body>
-    <div id="app"></div>
-
-    <div id="preloader">
-      <div class="spinner"></div>
-      <div id="progress-bar"></div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Temple Runner Game</title>
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+  <!-- Full-screen canvas container for 3D game scene -->
+  <div id="hero-container">
+    <canvas class="webgl"></canvas>
   </div>
-  
 
-    <section id="hero">
-<canvas class="webgl"></canvas>
+  <!-- In-game interface (optional) -->
+  <div id="game-overlay">
+    <h1>CX3 Demo Game</h1>
 
-    </section>
-   
-    <script type="module" src="main.js"></script>
-  </body>
+    <p id="game-description">
+      The CX3 Demo Game is a social experiment aimed at enhancing realism and setting the stage for our main game. In this game, you must navigate through a world full of obstacles and dangers while aiming to survive.
+    </p>
+    <button id="startButton">Start Game</button>
+    <button id="feedbackButton">Fill Feedback Form</button>
+  </div>
+
+  <script type="module" src="src/landingpage.js"></script>
+</body>
 </html>

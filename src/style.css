@@ -66,3 +66,104 @@ canvas {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Reset and full-screen setup */
+body, html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+#hero-container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+canvas.webgl {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Game overlay styling */
+/* #game-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white;
+  font-family: Arial, sans-serif;
+  z-index: 10;
+}
+
+#game-overlay h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+#game-overlay button {
+  padding: 0.5rem 1rem;
+  font-size: 1.5rem;
+  border: none;
+  border-radius: 5px;
+  background: #87CEEB;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+#game-overlay button:hover {
+  background: #ff4500;
+} */
+#game-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white;
+}
+
+#startButton, #feedbackButton {
+  background: rgba(52, 152, 219, 0.3);  /* Semi-transparent background (sky blue) */
+  color: white;
+  font-size: 18px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 20px;
+  backdrop-filter: blur(10px);  /* Frosted glass effect */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+#startButton:hover, #feedbackButton:hover {
+  background-color: rgba(41, 128, 185, 0.5);  /* Darker shade for hover effect */
+  transform: scale(1.05);  /* Slightly enlarge the button on hover */
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);  /* Deeper shadow on hover */
+}
+
+#feedbackButton {
+  margin-top: 10px;  /* Add some space between the buttons */
+}
+
+
+
+#game-description {
+  color: #fff; /* White text for description */
+  font-size: 18px; /* Font size for readability */
+  margin-top: 10px; /* Space between title and description */
+  line-height: 1.5; /* Adjust line height for better readability */
+  text-align: center; /* Center-align the text */
+  max-width: 600px; /* Limit the width of the description */
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 20px; /* Padding for text */
+  font-family: Arial, sans-serif; /* Use a clean, readable font */
+}
