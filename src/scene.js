@@ -175,7 +175,7 @@ scene.add(directionalLight);
   gltfLoader.load('/myavatar.glb', (gltf) => {
     player = gltf.scene;
 
-    player.scale.setScalar(1.2)
+    player.scale.setScalar(1.05)
     // Bounding box for positioning
     const box = new THREE.Box3().setFromObject(player);
     const size = new THREE.Vector3();
@@ -269,7 +269,7 @@ const groundWidth = 50;
 const groundLength = 50;
 const groundCount = 3; // Number of ground tiles
 const tileSpacing = groundLength;
-let speed = 0.85; // Speed of the environment
+let speed = 0.8; // Speed of the environment
 
 // Ground material
 const groundMaterial = new THREE.MeshStandardMaterial({
@@ -281,91 +281,6 @@ const groundMaterial = new THREE.MeshStandardMaterial({
   metalness: 1.0,
 });
 
-// // Function to create trees
-// function createTree() {
-//   const trunkGeo = new THREE.CylinderGeometry(0.2, 0.5, 2, 8);
-//   const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
-//   const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-
-//   const leavesGeo = new THREE.ConeGeometry(1, 3, 8);
-//   const leavesMat = new THREE.MeshStandardMaterial({ color: 0x228b22 });
-//   const leaves = new THREE.Mesh(leavesGeo, leavesMat);
-//   leaves.position.y = 2.5;
-
-//   const tree = new THREE.Group();
-//   tree.add(trunk, leaves);
-//   return tree;
-// }
-
-// // Function to create buildings
-// function createBuilding(width, height, depth, color) {
-//   const buildingGeo = new THREE.BoxGeometry(width, height, depth);
-//   const buildingMat = new THREE.MeshStandardMaterial({ color });
-//   const building = new THREE.Mesh(buildingGeo, buildingMat);
-//   building.castShadow = true;
-//   building.receiveShadow = true;
-//   return building;
-// }
-
-// // Create a single tile group (ground + trees + buildings)
-// function createTile(zOffset) {
-//   const tileGroup = new THREE.Group();
-
-//   // Ground
-//   const groundGeo = new THREE.PlaneGeometry(groundWidth, groundLength);
-//   const ground = new THREE.Mesh(groundGeo, groundMaterial);
-//   ground.rotation.x = -Math.PI / 2;
-//   ground.position.y = 0; // On the ground level
-//   ground.receiveShadow = true;
-//   tileGroup.add(ground);
-
-//   // Trees
-//   for (let z = -groundLength / 2; z < groundLength / 2; z += 10) {
-//     const treeLeft = createTree();
-//     treeLeft.position.set(-20, 0, z);
-//     tileGroup.add(treeLeft);
-
-//     const treeRight = createTree();
-//     treeRight.position.set(20, 0, z);
-//     tileGroup.add(treeRight);
-//   }
-
-//   // Buildings
-//   for (let z = -groundLength / 2; z < groundLength / 2; z += 15) {
-//     const buildingLeft = createBuilding(5, 12, 5, 0x555555);
-//     buildingLeft.position.set(-30, 6, z);
-//     tileGroup.add(buildingLeft);
-
-//     const buildingRight = createBuilding(5, 15, 5, 0x777777);
-//     buildingRight.position.set(30, 7.5, z);
-//     tileGroup.add(buildingRight);
-//   }
-
-//   // Position the entire tile group
-//   tileGroup.position.z = zOffset;
-//   return tileGroup;
-// }
-
-// // Create tile groups
-// const tileGroups = [];
-// for (let i = 0; i < groundCount; i++) {
-//   const zOffset = -i * tileSpacing;
-//   const tile = createTile(zOffset);
-//   scene.add(tile);
-//   tileGroups.push(tile);
-// }
-
-// // Update tiles for infinite scrolling
-// function updateGround() {
-//   tileGroups.forEach((tile) => {
-//     tile.position.z += speed;
-
-//     // If the tile moves out of view, reposition it to the back
-//     if (tile.position.z > tileSpacing) {
-//       tile.position.z -= groundCount * tileSpacing;
-//     }
-//   });
-// }
 
 // Global variables for models
 let treeModel; // Store the loaded tree model
@@ -481,6 +396,7 @@ function initializeScene() {
       tileGroups.push(tile);
     }
   });
+ 
 }
 
 // Update tiles for infinite scrolling
@@ -652,25 +568,14 @@ setInterval(() => {
 
   scene.add(camera)
   
-  
+
+
+
 const backOffset = new THREE.Vector3(0, 2, -5); // Back view
 const frontOffset = new THREE.Vector3(0, 2, 5); // Front view
 
 
-// Ensure the camera updates each frame
-// function updateCamera() {
-//   if (!gameOver) {
-//       // Ensure the camera is always following the player with the standard offset
-//       camera.position.x = player.position.x + frontOffset.x; // Track player on X-axis with offset
-//       camera.position.y = player.position.y + frontOffset.y; // Fixed height above player
-//       camera.position.z = player.position.z + frontOffset.z; // Track player on Z-axis with offset
-
-//       // Ensure the camera is looking at the player from behind
-//       camera.lookAt(player.position.x, player.position.y, player.position.z);
-//   }
-// }
-
-const cameraOffset = new THREE.Vector3(0, 4, 7); // Adjust based on game design
+const cameraOffset = new THREE.Vector3(0,   4, 6); // Adjust based on game design
 const lookAheadDistance = 10; // Distance ahead of the player to focus on
 
 // Function to update the camera's position and orientation
