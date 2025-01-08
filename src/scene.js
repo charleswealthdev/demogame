@@ -175,7 +175,7 @@ scene.add(directionalLight);
   gltfLoader.load('/myavatar.glb', (gltf) => {
     player = gltf.scene;
 
-    player.scale.setScalar(0.8)
+    player.scale.setScalar(1.2)
     // Bounding box for positioning
     const box = new THREE.Box3().setFromObject(player);
     const size = new THREE.Vector3();
@@ -269,7 +269,7 @@ const groundWidth = 50;
 const groundLength = 50;
 const groundCount = 3; // Number of ground tiles
 const tileSpacing = groundLength;
-let speed = 0.7; // Speed of the environment
+let speed = 0.85; // Speed of the environment
 
 // Ground material
 const groundMaterial = new THREE.MeshStandardMaterial({
