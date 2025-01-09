@@ -58,7 +58,7 @@ const progressBar = document.querySelector('#progress-bar');
 // Track loading progress
 loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
   if (progressBar) {
-    console.log(`Loaded ${itemsLoaded} of ${itemsTotal} files: ${url}`);
+    // console.log(`Loaded ${itemsLoaded} of ${itemsTotal} files: ${url}`);
     const progress = (itemsLoaded / itemsTotal) * 100;
   
     document.getElementById('progress-bar').style.width = `${progress}%`;
@@ -72,7 +72,7 @@ loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
 
 // Handle loading errors
 loadingManager.onError = (url) => {
-    console.error(`There was an error loading ${url}`);
+    // console.error(`There was an error loading ${url}`);
 };
 
 // Use the LoadingManager with loaders
