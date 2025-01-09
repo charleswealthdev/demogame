@@ -12,23 +12,23 @@ import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
     camera.position.set(0, 2, 5);
 
     // Renderer setup
-    const canvas = document.querySelector('.webglland'); // Use a class selector
-
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.5;
-    renderer.shadowMap.enabled = true;
+    // Reuse the renderer for both landing and game pages
+    const canvas = document.querySelector('.webglland'); 
+const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('.webglland'), antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio < 2 ? window.devicePixelRatio : 2);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.5;
+renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 
-    // Add HDR environment
-    const rgbeLoader = new RGBELoader();
-rgbeLoader.load('street_lamp_1k.hdr', (texture) => {
-  texture.mapping = THREE.EquirectangularReflectionMapping;
-  texture.encoding = THREE.RGBEEncoding;  // Ensure the encoding is set correctly for HDR textures
-  scene.environment = texture;
-});
+//     const rgbeLoader = new RGBELoader();
+// rgbeLoader.load('street_lamp_1k.hdr', (texture) => {
+//   texture.mapping = THREE.EquirectangularReflectionMapping;
+//   texture.encoding = THREE.RGBEEncoding;  // Ensure the encoding is set correctly for HDR textures
+//   scene.environment = texture;
+// });
 
 
 
@@ -45,31 +45,31 @@ rgbeLoader.load('street_lamp_1k.hdr', (texture) => {
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(5, 10, 7.5);
     directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize.width = 1024;
-    directionalLight.shadow.mapSize.height = 1024;
+    directionalLight.shadow.mapSize.width = 512;
+    directionalLight.shadow.mapSize.height = 512;
     scene.add(directionalLight);
     
-    let ground;
-   gltfLoader.load('botanical_garden.glb', (gltf) => {
-     ground = gltf.scene;
-    ground.position.set(0, -2, 0); // Adjust for proper grounding
-    ground.scale.set(10, 10, 10);
-    scene.add(ground);
-});
+//     let ground;
+//    gltfLoader.load('botanical_garden.glb', (gltf) => {
+//      ground = gltf.scene;
+//     ground.position.set(0, -2, 0); // Adjust for proper grounding
+//     ground.scale.set(10, 10, 10);
+//     scene.add(ground);
+// });
 
 
 
 
 
 
-let character;
-// Load character model
-gltfLoader.load('myavatar.glb', (gltf) => {
-    character = gltf.scene;
-    character.scale.set(2, 2, 2); // Proper scaling
-    character.position.set(0, -1.9, 0); // Matches terrain height
-    scene.add(character);
-});
+// let character;
+// // Load character model
+// gltfLoader.load('myavatar.glb', (gltf) => {
+//     character = gltf.scene;
+//     character.scale.set(2, 2, 2); // Proper scaling
+//     character.position.set(0, -1.9, 0); // Matches terrain height
+//     scene.add(character);
+// });
 
 // Orbit Controls
 const controls = new OrbitControls(camera, canvas);
@@ -82,9 +82,9 @@ controls.enableZoom = false;  // Disable zooming
         requestAnimationFrame(animate);
 
         // Rotate character for dynamic effect
-        if (ground) {
-            ground.rotation.y += 0.01;
-        }
+        // if (ground) {
+        //     ground.rotation.y += 0.01;
+        // }
 
         controls.update(); // Update controls
         renderer.render(scene, camera);

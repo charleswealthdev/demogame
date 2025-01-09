@@ -8,16 +8,10 @@ import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 export function createHeroScene(container){
 
 
-  if (!container) {
-    console.error('Container for the game scene not found.');
-    return;
-}
+
 
 const canvas = container.querySelector('.webgl');
-if (!canvas) {
-    console.error('Canvas for the game scene not found.');
-    return;
-}
+
 
 // Get dimensions for rendering
 const width = container.clientWidth || window.innerWidth;
@@ -30,18 +24,14 @@ scene.background = new THREE.Color(0x202020); // Dark background
 // Camera setup
 const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
 camera.position.set(0, 2, 5);
-
-// Renderer setup
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-renderer.setClearColor(0x000000, 1); // Background color
-renderer.setSize(width, height);
+const renderer = new THREE.WebGLRenderer({
+  canvas,
+  antialias: true,
+  powerPreference: "high-performance", // Prioritize performance
+});
+renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
-
+renderer.shadowMap.enabled = false;  // Disable shadows if needed
 
 
 
@@ -117,13 +107,13 @@ audioLoader.load('Push-Long-Version(chosic.com).mp3', function (buffer) {
 
 
 
-const objectSound = new THREE.PositionalAudio(listener);
-audioLoader.load('breathing-fast-247449.mp3', function (buffer) {
-  objectSound.setBuffer(buffer);
-  objectSound.setLoop(true);
-  objectSound.setVolume(0.5);
-  objectSound.play();
-});
+// const objectSound = new THREE.PositionalAudio(listener);
+// audioLoader.load('breathing-fast-247449.mp3', function (buffer) {
+//   objectSound.setBuffer(buffer);
+//   objectSound.setLoop(true);
+//   objectSound.setVolume(0.5);
+//   objectSound.play();
+// });
 
 
 const gameOverSound = new THREE.Audio(listener);
@@ -222,7 +212,6 @@ scene.add(directionalLight);
   
     scene.add(player);
    
-    player.add(objectSound)
     // Animation setup
     mixer = new THREE.AnimationMixer(player);
     gltf.animations.forEach((clip) => {
@@ -295,14 +284,11 @@ const groundMaterial = new THREE.MeshStandardMaterial({
   metalness: 1.0,
 });
 
+let treeModel = null;
+let buildingModel = null;
+const tileGroups = [];
 
-// Global variables for models
-let treeModel; // Store the loaded tree model
-let buildingModel; // Store the loaded building model
-
-// Function to load a GLTF model
 function loadModel(path, callback) {
-
   gltfLoader.load(
     path,
     (gltf) => {
@@ -312,11 +298,11 @@ function loadModel(path, callback) {
     undefined,
     (error) => {
       console.error(`An error occurred while loading the model from ${path}:`, error);
+      callback(null); // Pass null if loading fails
     }
   );
 }
 
-// Function to load assets (tree and building models)
 function loadAssets(callback) {
   let assetsLoaded = 0;
 
@@ -338,29 +324,30 @@ function loadAssets(callback) {
   });
 }
 
-// Function to create a tree from the loaded model
-function createTree() {
+function createTree(scale = 2.5) {
   if (!treeModel) {
     console.error('Tree model is not loaded yet.');
     return new THREE.Group(); // Return an empty placeholder
   }
   const treeInstance = treeModel.clone();
-  treeInstance.scale.set(2.5, 2.5,2.5); // Adjust scale as needed
+  treeInstance.scale.set(scale, scale, scale);
+  treeInstance.castShadow = true;
+  treeInstance.receiveShadow = true;
   return treeInstance;
 }
 
-// Function to create a building from the loaded model
-function createBuilding() {
+function createBuilding(scale = 0.5) {
   if (!buildingModel) {
     console.error('Building model is not loaded yet.');
     return new THREE.Group(); // Return an empty placeholder
   }
   const buildingInstance = buildingModel.clone();
-  buildingInstance.scale.set(0.5, 0.5, 0.5); // Adjust scale as needed
+  buildingInstance.scale.set(scale, scale, scale);
+  buildingInstance.castShadow = true;
+  buildingInstance.receiveShadow = true;
   return buildingInstance;
 }
 
-// Create a single tile group (ground + trees + buildings)
 function createTile(zOffset) {
   const tileGroup = new THREE.Group();
 
@@ -368,7 +355,7 @@ function createTile(zOffset) {
   const groundGeo = new THREE.PlaneGeometry(groundWidth, groundLength);
   const ground = new THREE.Mesh(groundGeo, groundMaterial);
   ground.rotation.x = -Math.PI / 2;
-  ground.position.y = 0; // On the ground level
+  ground.position.y = 0;
   ground.receiveShadow = true;
   tileGroup.add(ground);
 
@@ -386,21 +373,18 @@ function createTile(zOffset) {
   // Buildings
   for (let z = -groundLength / 2; z < groundLength / 2; z += 15) {
     const buildingLeft = createBuilding();
-    buildingLeft.position.set(-30, 0, z); // Adjust y-position as needed
+    buildingLeft.position.set(-30, 0, z);
     tileGroup.add(buildingLeft);
 
     const buildingRight = createBuilding();
-    buildingRight.position.set(30, 0, z); // Adjust y-position as needed
+    buildingRight.position.set(30, 0, z);
     tileGroup.add(buildingRight);
   }
 
-  // Position the entire tile group
   tileGroup.position.z = zOffset;
   return tileGroup;
 }
 
-const tileGroups = [];
-// Initialize the scene with tiles
 function initializeScene() {
   loadAssets(() => {
     for (let i = 0; i < groundCount; i++) {
@@ -410,7 +394,6 @@ function initializeScene() {
       tileGroups.push(tile);
     }
   });
- 
 }
 
 // Update tiles for infinite scrolling
@@ -585,36 +568,57 @@ setInterval(() => {
 
 
 
-const backOffset = new THREE.Vector3(0, 2, -5); // Back view
-const frontOffset = new THREE.Vector3(0, 2, 5); // Front view
+
 
 
 const cameraOffset = new THREE.Vector3(0,   4, 6); // Adjust based on game design
 const lookAheadDistance = 10; // Distance ahead of the player to focus on
 
 // Function to update the camera's position and orientation
+// function updateCamera() {
+//     // Calculate the target camera position based on the player's position
+//     const targetCameraPosition = player.position.clone().add(cameraOffset);
+
+//     // Smoothly transition the camera to the target position
+//     camera.position.lerp(targetCameraPosition, 0.3); // Adjust smoothing factor (0.1) as needed
+
+//     // Calculate the look-at position (slightly ahead of the player)
+//     const lookAtPosition = player.position.clone();
+//     lookAtPosition.z += lookAheadDistance; // Adjust for forward direction
+
+//     // Make the camera look at the target position
+//     camera.lookAt(lookAtPosition);
+
+// }
+let lastPlayerPosition = new THREE.Vector3(); // Cache last position
+
 function updateCamera() {
-    // Calculate the target camera position based on the player's position
+  // Check if player position has changed significantly
+  const movementThreshold = 0.1; // Only update camera if player moves significantly
+  if (player.position.distanceTo(lastPlayerPosition) > movementThreshold) {
+    // Calculate the target camera position
     const targetCameraPosition = player.position.clone().add(cameraOffset);
-
-    // Smoothly transition the camera to the target position
-    camera.position.lerp(targetCameraPosition, 0.3); // Adjust smoothing factor (0.1) as needed
-
-    // Calculate the look-at position (slightly ahead of the player)
+    camera.position.lerp(targetCameraPosition, 0.3);
+    
+    // Calculate the look-at position (ahead of the player)
     const lookAtPosition = player.position.clone();
-    lookAtPosition.z += lookAheadDistance; // Adjust for forward direction
+    lookAtPosition.z += lookAheadDistance;
 
-    // Make the camera look at the target position
+    // Update camera lookAt
     camera.lookAt(lookAtPosition);
 
+    // Update last player position
+    lastPlayerPosition.copy(player.position);
+  }
 }
 
 
   const controls = new OrbitControls(camera,canvas)
-  controls.enableDamping=true;
-  controls.enableZoom = true; // Enable pinch zoom
-  controls.maxDistance = 25;  // Limit zoom distance
- controls.minDistance = 5;   // Avoid zooming too close
+  controls.enableDamping=false;
+  controls.enableZoom = false;  // Disable zooming
+  controls.maxPolarAngle = Math.PI / 2; // Restrict looking below ground
+controls.minPolarAngle = Math.PI / 4;
+
 
   let moveLeft = false
   let moveRight = false
@@ -684,10 +688,6 @@ if(event.key ==='ArrowRight')
       function checkGameOver(player, obstacles) {
         obstacles.forEach((obstacle) => {
           
-          if (!player || !obstacles || !objectSound || !backgroundMusic) {
-            console.error("Player, obstacles, or sound objects are undefined.");
-            return;
-          }
           const playerBox = new THREE.Box3().setFromObject(player);
           const obstacleBox = new THREE.Box3().setFromObject(obstacle);
       
@@ -916,7 +916,7 @@ function calculateCameraBounds() {
     console.log('resized')
   });
 
-      renderer.shadowMap.enabled = true;
+      
       const clock = new THREE.Clock()
   function animate(){
     if (gameOver) return; // Stop updates if the game is over
