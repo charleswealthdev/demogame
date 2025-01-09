@@ -614,7 +614,7 @@ function updateCamera() {
 
 
   const controls = new OrbitControls(camera,canvas)
-  controls.enableDamping=false;
+  
   controls.enableZoom = false;  // Disable zooming
   controls.maxPolarAngle = Math.PI / 2; // Restrict looking below ground
 controls.minPolarAngle = Math.PI / 4;
