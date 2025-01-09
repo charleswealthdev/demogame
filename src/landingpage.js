@@ -4,7 +4,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
-function initializeLandingPageScene() {
+ export function initializeLandingPageScene () {
     const scene = new THREE.Scene();
 
     // Camera setup
@@ -12,7 +12,8 @@ function initializeLandingPageScene() {
     camera.position.set(0, 2, 5);
 
     // Renderer setup
-    const canvas = document.querySelector('.webgl'); // Select the canvas element
+    const canvas = document.querySelector('.webglland'); // Use a class selector
+
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -23,11 +24,14 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     // Add HDR environment
     const rgbeLoader = new RGBELoader();
-    rgbeLoader.load('street_lamp_1k.hdr', (texture) => {
-        texture.mapping = THREE.EquirectangularReflectionMapping;
-        scene.environment = texture;
-      
-    });
+rgbeLoader.load('street_lamp_1k.hdr', (texture) => {
+  texture.mapping = THREE.EquirectangularReflectionMapping;
+  texture.encoding = THREE.RGBEEncoding;  // Ensure the encoding is set correctly for HDR textures
+  scene.environment = texture;
+});
+
+
+
     const gltfLoader = new GLTFLoader();
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/'); 
@@ -95,16 +99,3 @@ controls.enableZoom = false;  // Disable zooming
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 }
-
-// Initialize the scene when the DOM is ready
-window.addEventListener('DOMContentLoaded', () => {
-    initializeLandingPageScene();
-
-    // Handle the start game button click
-    const startButton = document.getElementById('startButton');
-    if (startButton) {
-        startButton.addEventListener('click', () => {
-           window.location.href = '/game.html'
-        });
-    }
-});

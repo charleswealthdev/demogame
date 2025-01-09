@@ -120,6 +120,11 @@ canvas.webgl {
 #game-overlay button:hover {
   background: #ff4500;
 } */
+
+#gamePage {
+  display: none; /* Hide game page initially */
+}
+
 #game-overlay {
   position: absolute;
   top: 50%;

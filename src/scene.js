@@ -7,16 +7,44 @@ import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
 export function createHeroScene(container){
 
-const scene = new THREE.Scene()
-const canvas = document.querySelector('canvas.webgl')
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight,0.1,1000)
-const renderer = new THREE.WebGLRenderer({
-  canvas: canvas,
-  antialias:true
-})
 
-renderer.setSize(container.clientWidth, container.clientHeight);
-container.appendChild(renderer.domElement);
+  if (!container) {
+    console.error('Container for the game scene not found.');
+    return;
+}
+
+const canvas = container.querySelector('.webgl');
+if (!canvas) {
+    console.error('Canvas for the game scene not found.');
+    return;
+}
+
+// Get dimensions for rendering
+const width = container.clientWidth || window.innerWidth;
+const height = container.clientHeight || window.innerHeight;
+
+// Scene setup
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x202020); // Dark background
+
+// Camera setup
+const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+camera.position.set(0, 2, 5);
+
+// Renderer setup
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+renderer.setClearColor(0x000000, 1); // Background color
+renderer.setSize(width, height);
+renderer.setPixelRatio(window.devicePixelRatio);
+
+
+
+
 
 const loadingManager = new THREE.LoadingManager();
 
@@ -235,21 +263,7 @@ scene.add(directionalLight);
     tree.receiveShadow = true;
     return tree;
   }
-  function addBuildings(scene, groundTiles) {
-    const buildingSpacing = 15; // Distance between buildings
-    groundTiles.forEach((ground, index) => {
-      const zPosition = -index * 50; // Align with ground tile z-position
-      for (let i = zPosition; i < zPosition + 50; i += buildingSpacing) {
-        const building1 = createBuilding(5, 10, 5, 0x808080); // Gray building
-        building1.position.set(-10, 5, i); // Position on the left side of the road
-        scene.add(building1);
   
-        const building2 = createBuilding(6, 12, 6, 0xA9A9A9); // Dark gray building
-        building2.position.set(10, 6, i); // Position on the right side of the road
-        scene.add(building2);
-      }
-    });
-  }
   
 
   // const roadLength = 200;
@@ -467,7 +481,7 @@ function createObstacles() {
         ];
         const selectedModel = models[Math.floor(Math.random() * models.length)];
 
-        const gltfLoader = new GLTFLoader();
+      
 
         gltfLoader.load(selectedModel, (gltf) => {
           const model = gltf.scene;
