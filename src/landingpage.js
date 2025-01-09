@@ -104,7 +104,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const startButton = document.getElementById('startButton');
     if (startButton) {
         startButton.addEventListener('click', () => {
-            window.location.href = 'game.html'; // Redirect to the main game page
+           window.location.href = '/game.html'
         });
     }
 });
