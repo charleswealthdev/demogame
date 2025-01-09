@@ -49,27 +49,27 @@ rgbeLoader.load('street_lamp_1k.hdr', (texture) => {
     directionalLight.shadow.mapSize.height = 512;
     scene.add(directionalLight);
     
-    let ground;
-   gltfLoader.load('botanical_garden.glb', (gltf) => {
-     ground = gltf.scene;
-    ground.position.set(0, -2, 0); // Adjust for proper grounding
-    ground.scale.set(10, 10, 10);
-    scene.add(ground);
-});
-
-
-
-
-
-
-// let character;
-// // Load character model
-// gltfLoader.load('myavatar.glb', (gltf) => {
-//     character = gltf.scene;
-//     character.scale.set(2, 2, 2); // Proper scaling
-//     character.position.set(0, -1.9, 0); // Matches terrain height
-//     scene.add(character);
+//     let ground;
+//    gltfLoader.load('botanical_garden.glb', (gltf) => {
+//      ground = gltf.scene;
+//     ground.position.set(0, -2, 0); // Adjust for proper grounding
+//     ground.scale.set(10, 10, 10);
+//     scene.add(ground);
 // });
+
+
+
+
+
+
+let character;
+// Load character model
+gltfLoader.load('avatarland.glb', (gltf) => {
+    character = gltf.scene;
+    character.scale.set(2, 2, 2); // Proper scaling
+    character.position.set(0, -1.9, 0); // Matches terrain height
+    scene.add(character);
+});
 
 // Orbit Controls
 const controls = new OrbitControls(camera, canvas);
@@ -82,8 +82,8 @@ controls.enableZoom = false;  // Disable zooming
         requestAnimationFrame(animate);
 
      
-        if (ground) {
-            ground.rotation.y += 0.01;
+        if (character) {
+            character.rotation.y += 0.01;
         }
 
         controls.update(); // Update controls

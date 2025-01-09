@@ -30,10 +30,11 @@ const renderer = new THREE.WebGLRenderer({
   powerPreference: "high-performance", // Prioritize performance
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.shadowMap.enabled = false;  // Disable shadows if needed
-
-
+renderer.setPixelRatio(window.devicePixelRatio < 2 ? window.devicePixelRatio : 2);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.5;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 
 const loadingManager = new THREE.LoadingManager();
@@ -173,15 +174,14 @@ playStopButton.addEventListener('click', function () {
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 
 // const pointLight = new THREE.PointLight(0xffffff, 1,100)
-const hemisphereLight = new THREE.HemisphereLight(0xffffff,0x444444, 0.6)
 
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(5, 10, 7.5);
 directionalLight.castShadow = true; // Enable shadows
-directionalLight.shadow.mapSize.width = 512; // Higher resolution shadows
-directionalLight.shadow.mapSize.height = 512;
+directionalLight.shadow.mapSize.width = 256; // Higher resolution shadows
+directionalLight.shadow.mapSize.height = 256;
 scene.add(directionalLight);
-  scene.add(ambientLight, hemisphereLight);
+  scene.add(ambientLight);
 
 
 
@@ -574,22 +574,6 @@ setInterval(() => {
 const cameraOffset = new THREE.Vector3(0,   4, 6); // Adjust based on game design
 const lookAheadDistance = 10; // Distance ahead of the player to focus on
 
-// Function to update the camera's position and orientation
-// function updateCamera() {
-//     // Calculate the target camera position based on the player's position
-//     const targetCameraPosition = player.position.clone().add(cameraOffset);
-
-//     // Smoothly transition the camera to the target position
-//     camera.position.lerp(targetCameraPosition, 0.3); // Adjust smoothing factor (0.1) as needed
-
-//     // Calculate the look-at position (slightly ahead of the player)
-//     const lookAtPosition = player.position.clone();
-//     lookAtPosition.z += lookAheadDistance; // Adjust for forward direction
-
-//     // Make the camera look at the target position
-//     camera.lookAt(lookAtPosition);
-
-// }
 let lastPlayerPosition = new THREE.Vector3(); // Cache last position
 
 function updateCamera() {
@@ -614,11 +598,25 @@ function updateCamera() {
 
 
   const controls = new OrbitControls(camera,canvas)
-  
   controls.enableZoom = false;  // Disable zooming
+controls.enablePan = false; // Disable panning (prevents movement of the camera in all directions)
+
   controls.maxPolarAngle = Math.PI / 2; // Restrict looking below ground
 controls.minPolarAngle = Math.PI / 4;
 
+// Prevent the camera from flipping around
+controls.enableDamping = true; // Smooth out movements
+controls.dampingFactor = 0.25; // Adjust damping factor for a smoother transition
+
+
+// Disable rotation entirely
+controls.enableRotate = false; // Disable rotation (prevents the user from rotating the camera)
+
+// // Set a fixed distance between the camera and target
+// controls.maxDistance = 10; // Set maximum distance of the camera from the target
+// controls.minDistance = 10; // Set minimum distance of the camera from the target (fixed distance)
+
+controls.update(); // Update controls to apply the changes
 
   let moveLeft = false
   let moveRight = false
