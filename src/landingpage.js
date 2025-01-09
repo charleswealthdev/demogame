@@ -23,12 +23,12 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 
-//     const rgbeLoader = new RGBELoader();
-// rgbeLoader.load('street_lamp_1k.hdr', (texture) => {
-//   texture.mapping = THREE.EquirectangularReflectionMapping;
-//   texture.encoding = THREE.RGBEEncoding;  // Ensure the encoding is set correctly for HDR textures
-//   scene.environment = texture;
-// });
+    const rgbeLoader = new RGBELoader();
+rgbeLoader.load('street_lamp_1k.hdr', (texture) => {
+  texture.mapping = THREE.EquirectangularReflectionMapping;
+  texture.encoding = THREE.RGBEEncoding;  // Ensure the encoding is set correctly for HDR textures
+  scene.environment = texture;
+});
 
 
 
@@ -49,27 +49,27 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     directionalLight.shadow.mapSize.height = 512;
     scene.add(directionalLight);
     
-//     let ground;
-//    gltfLoader.load('botanical_garden.glb', (gltf) => {
-//      ground = gltf.scene;
-//     ground.position.set(0, -2, 0); // Adjust for proper grounding
-//     ground.scale.set(10, 10, 10);
-//     scene.add(ground);
-// });
+    let ground;
+   gltfLoader.load('botanical_garden.glb', (gltf) => {
+     ground = gltf.scene;
+    ground.position.set(0, -2, 0); // Adjust for proper grounding
+    ground.scale.set(10, 10, 10);
+    scene.add(ground);
+});
 
 
 
 
 
 
-// let character;
-// // Load character model
-// gltfLoader.load('myavatar.glb', (gltf) => {
-//     character = gltf.scene;
-//     character.scale.set(2, 2, 2); // Proper scaling
-//     character.position.set(0, -1.9, 0); // Matches terrain height
-//     scene.add(character);
-// });
+let character;
+// Load character model
+gltfLoader.load('myavatar.glb', (gltf) => {
+    character = gltf.scene;
+    character.scale.set(2, 2, 2); // Proper scaling
+    character.position.set(0, -1.9, 0); // Matches terrain height
+    scene.add(character);
+});
 
 // Orbit Controls
 const controls = new OrbitControls(camera, canvas);
