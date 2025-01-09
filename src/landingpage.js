@@ -49,9 +49,9 @@ rgbeLoader.load('street_lamp_1k.hdr', (texture) => {
     directionalLight.shadow.mapSize.height = 1024;
     scene.add(directionalLight);
     
-    
+    let ground;
    gltfLoader.load('botanical_garden.glb', (gltf) => {
-    const ground = gltf.scene;
+     ground = gltf.scene;
     ground.position.set(0, -2, 0); // Adjust for proper grounding
     ground.scale.set(10, 10, 10);
     scene.add(ground);
@@ -82,8 +82,8 @@ controls.enableZoom = false;  // Disable zooming
         requestAnimationFrame(animate);
 
         // Rotate character for dynamic effect
-        if (character) {
-            character.rotation.y += 0.01;
+        if (ground) {
+            ground.rotation.y += 0.01;
         }
 
         controls.update(); // Update controls
