@@ -62,14 +62,14 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 
 
-let character;
-// Load character model
-gltfLoader.load('myavatar.glb', (gltf) => {
-    character = gltf.scene;
-    character.scale.set(2, 2, 2); // Proper scaling
-    character.position.set(0, -1.9, 0); // Matches terrain height
-    scene.add(character);
-});
+// let character;
+// // Load character model
+// gltfLoader.load('myavatar.glb', (gltf) => {
+//     character = gltf.scene;
+//     character.scale.set(2, 2, 2); // Proper scaling
+//     character.position.set(0, -1.9, 0); // Matches terrain height
+//     scene.add(character);
+// });
 
 // Orbit Controls
 const controls = new OrbitControls(camera, canvas);
