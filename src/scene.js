@@ -17,7 +17,10 @@ const canvas = container.querySelector('.webgl');
 const width = container.clientWidth || window.innerWidth;
 const height = container.clientHeight || window.innerHeight;
 
+
+let currentScene = 'mainMenu';
 // Scene setup
+const mainMenuScene = new THREE.Scene();
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x202020); // Dark background
 
@@ -108,13 +111,7 @@ audioLoader.load('Push-Long-Version(chosic.com).mp3', function (buffer) {
 
 
 
-// const objectSound = new THREE.PositionalAudio(listener);
-// audioLoader.load('breathing-fast-247449.mp3', function (buffer) {
-//   objectSound.setBuffer(buffer);
-//   objectSound.setLoop(true);
-//   objectSound.setVolume(0.5);
-//   objectSound.play();
-// });
+
 
 
 const gameOverSound = new THREE.Audio(listener);
@@ -185,10 +182,27 @@ scene.add(directionalLight);
 
 
 
+  
+
+
   let player, mixer, actions = {};
   dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/'); 
   // Attach DracoLoader to GLTFLoader
   gltfLoader.setDRACOLoader(dracoLoader);
+
+
+ 
+  let mainMenucharacter;
+  // Load character model
+  gltfLoader.load('avatarland.glb', (gltf) => {
+      mainMenucharacter = gltf.scene;
+      mainMenucharacter.scale.set(2, 2, 2); // Proper scaling
+      mainMenucharacter.position.set(0, -1.9, 0); // Matches terrain height
+      mainMenuScene.add(mainMenucharacter);
+
+  });
+
+
   // Load Model
   gltfLoader.load('/myavatar.glb', (gltf) => {
     player = gltf.scene;
@@ -260,11 +274,8 @@ scene.add(directionalLight);
 
 const textureTest = textureLoader.load('/cloudy-veined-quartz-light-unity/cloudy-veined-quartz-light_preview.jpg')
 const textureNormal = textureLoader.load('/rocky-worn-ground-bl/rocky-worn-ground-normal-ogl.png')
-const textureAO = textureLoader.load('rocky-worn-ground-bl/rocky-worn-ground-ao.png')
 const textureM = textureLoader.load('rocky-worn-ground-bl/rocky-worn-ground1.png')
 const textureR = textureLoader.load('rocky-worn-ground-bl/rocky-worn-ground_Roughness.png')
-
-
 
   
 // Constants
@@ -917,6 +928,7 @@ function calculateCameraBounds() {
       
       const clock = new THREE.Clock()
   function animate(){
+    
     if (gameOver) return; // Stop updates if the game is over
     animationFrameId = requestAnimationFrame(animate);
     const delta = clock.getDelta();

@@ -7,40 +7,30 @@
   <link rel="stylesheet" href="./src/style.css">
 </head>
 <body>
-
-  <div id="landingPage">
-  <!-- Full-screen canvas container for 3D game scene -->
  
-    <canvas class="webglland"></canvas>
   
 
+  
   <!-- In-game interface (optional) -->
   <div id="game-overlay">
-
 
     <p id="game-description">
       The CX3 Demo Game is a social experiment designed to enhance realism and improvement, where you navigate through a world filled with obstacles and challenges, striving for survival.
     </p>
     <button id="startButton">Start Game</button>
-    <button id="feedbackButton">Fill Feedback Form</button>
+    <button id="feedbackButton" onclick="window.open('https://forms.gle/pUBisaZ692W3rs5XA', '_blank')">Fill Feedback Form</button>
   </div>
 </div>
 
 
-
-
-  <div id="gamePage"  style="display:none;">
-
-    <div id="app"></div>
-
-    <div id="preloader">
-      <div class="spinner"></div>
-      <div id="progress-bar"></div>
-  </div>
-  
-
-    <section id="hero">
+    <section id="hero" style="display: none;">
 <canvas class="webgl"></canvas>
+
+
+<div id="preloader">
+  <div class="spinner"></div>
+  <div id="progress-bar"></div>
+</div>
 
     </section>
    
@@ -50,3 +40,4 @@
   <script type="module" src="main.js"  ></script>
 </body>
 </html>
+
