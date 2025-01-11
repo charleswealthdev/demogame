@@ -40,11 +40,23 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 
+
+
+
 const loadingManager = new THREE.LoadingManager();
+
+// Use the LoadingManager with loaders
+const textureLoader = new THREE.TextureLoader(loadingManager);
+const gltfLoader = new GLTFLoader(loadingManager);
+const dracoLoader = new DRACOLoader(loadingManager);
+const listener = new THREE.AudioListener();
+const backgroundMusic = new THREE.Audio(listener);
+
+const sound = new THREE.Audio(listener);
+const audioLoader = new THREE.AudioLoader(loadingManager);
 
 // Show loading screen while assets are loading
 loadingManager.onStart = () => {
-
 };
 
 // When all assets are loaded
@@ -52,7 +64,7 @@ loadingManager.onLoad = () => {
     console.log('All assets loaded');
     const preloader = document.getElementById('preloader');
     preloader.style.display = 'none'; // Hide preloader
-    
+
    
 };
 
@@ -78,14 +90,17 @@ loadingManager.onError = (url) => {
     // console.error(`There was an error loading ${url}`);
 };
 
-// Use the LoadingManager with loaders
-const textureLoader = new THREE.TextureLoader(loadingManager);
-const gltfLoader = new GLTFLoader(loadingManager);
-const dracoLoader = new DRACOLoader(loadingManager);
-const listener = new THREE.AudioListener();
 
-const sound = new THREE.Audio(listener);
-const audioLoader = new THREE.AudioLoader(loadingManager);
+// Load and play the background music
+audioLoader.load('Push-Long-Version(chosic.com).mp3', function (buffer) {
+  backgroundMusic.setBuffer(buffer);
+  backgroundMusic.setLoop(true); // Set to loop
+  backgroundMusic.setVolume(0.2); // Set the volume
+  backgroundMusic.play(); // Start playing the music
+});
+
+
+
 
 const rgbeLoader = new RGBELoader();
 rgbeLoader.load('/shanghai_bund_1k.hdr', (texture) => {
@@ -98,16 +113,6 @@ rgbeLoader.load('/shanghai_bund_1k.hdr', (texture) => {
 camera.add(listener);
 
 // 3. Set up the background music (using Web Audio API)
-
-const backgroundMusic = new THREE.Audio(listener);
-
-// Load and play the background music
-audioLoader.load('Push-Long-Version(chosic.com).mp3', function (buffer) {
-  backgroundMusic.setBuffer(buffer);
-  backgroundMusic.setLoop(true); // Set to loop
-  backgroundMusic.setVolume(0.2); // Set the volume
-  backgroundMusic.play(); // Start playing the music
-});
 
 
 
@@ -716,60 +721,82 @@ if(event.key ==='ArrowRight')
         // Play the game over sound
         gameOverSound.play();
       
-        // Create and style the restart button
-        const button = document.createElement('button');
-        button.innerText = 'Restart Game';
-        Object.assign(button.style, {
-          position: 'absolute',
-          top: '80%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          padding: '15px 30px',
-          fontSize: '24px',
-          fontWeight: 'bold',
-          backgroundColor: 'lightblue',
-          border: 'none',
-          borderRadius: '10px',
-          color: '#fff',
-          cursor: 'pointer',
-          zIndex: '1000',
-          boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-          transition: 'all 0.3s ease',
-        });
-        button.onmouseover = () => (button.style.backgroundColor = '#1e90ff');
-        button.onmouseout = () => (button.style.backgroundColor = 'lightblue');
-      
-        // Create game over overlay
-        const gameOverOverlay = document.createElement("div");
-        gameOverOverlay.id = "gameOverOverlay"; // Add a unique ID
-        Object.assign(gameOverOverlay.style, {
-          position: "fixed",
-          top: "0",
-          left: "0",
-          width: "100%",
-          height: "100%",
-          backgroundColor: "rgba(0, 0, 0, 0.8)",
-          color: "#fff",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          fontSize: "2rem",
-          zIndex: "1000",
-        });
-        gameOverOverlay.innerHTML = `
-          <p>Game Over!</p>
-          <p>Your Final Score: ${score}</p>
-          <p>Press "R" to Restart or Tap the Button Below</p>
-        `;
-        gameOverOverlay.appendChild(button);
-      
+      // Create and style the restart button
+const restartButton = document.createElement('button');
+restartButton.innerText = 'Restart Game';
+Object.assign(restartButton.style, {
+  backgroundColor: 'rgba(52, 152, 219, 0.3)', // Similar to feedback button styling
+  color: 'white',
+  border: 'none',
+  padding: '10px 20px',
+  borderRadius: '12px',
+  fontSize: '18px',
+  cursor: 'pointer',
+  margin: '10px', // Add spacing between buttons
+});
+restartButton.onmouseover = () => (restartButton.style.backgroundColor = '#0d8ce0');
+restartButton.onmouseout = () => (restartButton.style.backgroundColor = '#1da1f2');
+
+// Restart game functionality
+restartButton.onclick = () => {
+  document.body.removeChild(gameOverOverlay); // Remove the overlay
+  restartGame(); // Function to reset and restart the game
+};
+
+// Create and style the feedback button
+const feedbackButton = document.createElement('button');
+feedbackButton.innerText = 'Fill Feedback Form';
+Object.assign(feedbackButton.style, {
+  backgroundColor: 'rgba(52, 152, 219, 0.3)',
+  color: 'white',
+  border: 'none',
+  padding: '10px 20px',
+  borderRadius: '12px',
+  fontSize: '18px',
+  cursor: 'pointer',
+  margin: '10px', // Add spacing between buttons
+});
+feedbackButton.onmouseover = () => (feedbackButton.style.backgroundColor = '#0d8ce0');
+feedbackButton.onmouseout = () => (feedbackButton.style.backgroundColor = '#1da1f2');
+
+// Feedback button functionality
+feedbackButton.onclick = () => {
+  window.open('https://forms.gle/pUBisaZ692W3rs5XA', '_blank'); // Open feedback form
+};
+
+// Create game over overlay
+const gameOverOverlay = document.createElement('div');
+gameOverOverlay.id = 'gameOverOverlay'; // Add a unique ID
+Object.assign(gameOverOverlay.style, {
+  position: 'fixed',
+  top: '0',
+  left: '0',
+  width: '100%',
+  height: '100%',
+  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  color: '#fff',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  fontSize: '1.5rem',
+  zIndex: '1000',
+});
+gameOverOverlay.innerHTML = `
+  <p>Game Over!</p>
+  <p>Your Final Score: ${score}</p>
+  <p>Press "R" to Restart or Use the Button Below</p>
+`;
+
+// Append buttons to the overlay
+gameOverOverlay.appendChild(restartButton);
+gameOverOverlay.appendChild(feedbackButton);
         // Cancel the animation loop
         cancelAnimationFrame(animationFrameId);
         document.body.appendChild(gameOverOverlay);
       
         // Restart the game when the button is clicked
-        button.addEventListener('click', restartGame);
+        restartButton.addEventListener('click', restartGame);
       
         // Add a keydown event listener for 'R'
         const keyListener = (event) => {
