@@ -288,7 +288,7 @@ const groundWidth = 50;
 const groundLength = 50;
 const groundCount = 3; // Number of ground tiles
 const tileSpacing = groundLength;
-let speed = 0.5; // Speed of the environment
+let speed = 0.55; 
 
 // Ground material
 const groundMaterial = new THREE.MeshStandardMaterial({
