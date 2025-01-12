@@ -288,7 +288,7 @@ const groundWidth = 50;
 const groundLength = 50;
 const groundCount = 3; // Number of ground tiles
 const tileSpacing = groundLength;
-let speed = 0.8; // Speed of the environment
+let speed = 0.65; // Speed of the environment
 
 // Ground material
 const groundMaterial = new THREE.MeshStandardMaterial({
@@ -683,7 +683,7 @@ if(event.key ==='ArrowRight')
       // Increase game difficulty over time
       function increaseDifficulty() {
         if (!gameOver) {
-          speed += 0.000001;
+          speed += 0.0001;
         }
       }
       setInterval(increaseDifficulty, 100000);
@@ -853,8 +853,8 @@ gameOverOverlay.appendChild(feedbackButton);
       }
       
       
-      // Joystick Setup
       function setupJoystick() {
+        // Create joystick container
         const joystick = document.createElement("div");
         Object.assign(joystick.style, {
           position: "absolute",
@@ -864,79 +864,88 @@ gameOverOverlay.appendChild(feedbackButton);
           height: "120px",
           borderRadius: "50%",
           background: "rgba(0, 0, 0, 0.5)",
+          touchAction: "none", // Prevent default touch behaviors
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
         });
         document.body.appendChild(joystick);
       
+        // Create joystick handle
         const handle = document.createElement("div");
         Object.assign(handle.style, {
-          position: "absolute",
           width: "60px",
           height: "60px",
           borderRadius: "50%",
           background: "rgba(255, 255, 255, 0.8)",
-          left: "30px",
-          top: "30px",
+          touchAction: "none", // Prevent touch defaults
         });
         joystick.appendChild(handle);
-
-let isDragging = false;
-let initialTouch = null;
-
-const movementSpeed = 0.2; // Speed of horizontal movement
-const deadZone = 5; // Minimum distance to register movement
-
-// Calculate camera bounds (adjust as needed)
-
-
-joystick.addEventListener("touchstart", (e) => {
-  isDragging = true;
-  initialTouch = e.touches[0];
-});
-
-joystick.addEventListener("touchmove", (e) => {
-  if (isDragging && initialTouch) {
-    const rect = joystick.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-
-    // Calculate horizontal movement (X-axis only)
-    const deltaX = e.touches[0].clientX - centerX;
-
-    // Dead zone: Ignore minor movements near the center
-    if (Math.abs(deltaX) > deadZone) {
-      const normalizedX = Math.min(Math.max(deltaX / (rect.width / 2), -1), 1); // Normalize between -1 and 1
-
-      // Move player only along the X-axis
-      const { left, right } = calculateCameraBounds();
-      player.position.x = Math.min(Math.max(player.position.x + normalizedX * movementSpeed, left), right);
-
-      // Update joystick visual position (left-right only)
-      joystick.style.transform = `translateX(${deltaX}px)`;
-    }
-  }
-});
-
-joystick.addEventListener("touchend", () => {
-  isDragging = false;
-  initialTouch = null;
-
-  // Reset joystick visual position
-  joystick.style.transform = "translate(0, 0)";
-});
-
-// Calculate camera bounds (adjust as needed)
-function calculateCameraBounds() {
-  const aspect = window.innerWidth / window.innerHeight;
-  const distance = camera.position.z - player.position.z; // Distance from camera to player
-  const verticalFOV = THREE.MathUtils.degToRad(camera.fov); // Correct method for converting degrees to radians
-  const halfHeight = Math.tan(verticalFOV / 2) * distance;
-  const halfWidth = halfHeight * aspect;
-
-  return {
-    left: -halfWidth,
-    right: halfWidth,
-  };
-}     }
-
+      
+        // State variables for dragging
+        let isDragging = false;
+        let initialTouch = null;
+      
+        const movementSpeed = 0.15; // Speed of player movement
+        const deadZone = 7; // Ignore small movements near the center
+      
+        // Handle touch start
+        joystick.addEventListener("touchstart", (e) => {
+          isDragging = true;
+          initialTouch = e.touches[0];
+        });
+      
+        // Handle touch move
+        joystick.addEventListener("touchmove", (e) => {
+          if (isDragging && initialTouch) {
+            const rect = joystick.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+      
+            // Calculate horizontal movement (X-axis only)
+            const deltaX = e.touches[0].clientX - centerX;
+      
+            // Ignore small movements in the dead zone
+            if (Math.abs(deltaX) > deadZone) {
+              const normalizedX = Math.min(Math.max(deltaX / (rect.width / 2), -1), 1); // Normalize between -1 and 1
+      
+              // Move player within camera bounds
+              const { left, right } = calculateCameraBounds();
+              player.position.x = Math.min(Math.max(player.position.x + normalizedX * movementSpeed, left), right);
+      
+              // Update joystick handle position within bounds
+              const handleOffsetX = Math.min(
+                Math.max(deltaX, -rect.width / 2 + handle.offsetWidth / 2),
+                rect.width / 2 - handle.offsetWidth / 2
+              );
+              handle.style.transform = `translate(${handleOffsetX}px, 0)`;
+            }
+          }
+        });
+      
+        // Handle touch end
+        joystick.addEventListener("touchend", () => {
+          isDragging = false;
+          initialTouch = null;
+      
+          // Reset joystick handle position
+          handle.style.transform = "translate(0, 0)";
+        });
+      
+        // Calculate camera bounds dynamically
+        function calculateCameraBounds() {
+          const aspect = window.innerWidth / window.innerHeight;
+          const distance = camera.position.z - player.position.z; // Distance between camera and player
+          const verticalFOV = THREE.MathUtils.degToRad(camera.fov); // Convert FOV from degrees to radians
+          const halfHeight = Math.tan(verticalFOV / 2) * distance;
+          const halfWidth = halfHeight * aspect;
+      
+          return {
+            left: -halfWidth + 0.5, // Add padding to avoid clipping
+            right: halfWidth - 0.5, // Add padding to avoid clipping
+          };
+        }
+      }
+      
       function updatePlayerPosition() {
         player.position.y = 1; // Ground level (adjust based on your scene)
         player.position.z = 0; // Ensure no forward/backward movement
